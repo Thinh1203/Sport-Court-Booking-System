@@ -21,8 +21,9 @@ model User {
   role          Role            @default(USER)
   avatar        String?
   background    String?
+  avatarCloudinaryId String?
+  backgroundCloudinaryId String?
   isBlocked     Boolean?        @default(false)
-  isDeleted     Boolean?        @default(false)
   googleId      String?
   facebookId    String?
   createdAt     DateTime        @default(now())

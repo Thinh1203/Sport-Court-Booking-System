@@ -87,7 +87,14 @@ export class AuthService {
     async login (loginUserDto: LoginUserDto) {
         const existingUser = await this.prisma.user.findFirst({
             where: {
-                email: loginUserDto.email 
+                AND: [
+                    {
+                        email: loginUserDto.email 
+                    },
+                    {
+                        isBlocked: false
+                    }
+                ]
             }
         });
         if (!existingUser) {
