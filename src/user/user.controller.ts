@@ -1,8 +1,9 @@
-import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Put, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Put, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { Response } from 'express';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UserFilterDto } from './dto/user-filter.dto';
 @Controller('user')
 export class UserController {
     constructor (
@@ -10,9 +11,9 @@ export class UserController {
     ) {}
 
    @Get()
-   async getAllUser (@Res() res: Response) : Promise<any> {
+   async getAllUser (@Res() res: Response, @Query() query: UserFilterDto) : Promise<any> {
     try {
-        const data = await this.userService.getAllUser();
+        const data = await this.userService.getAllUser(query);
         return res.status(HttpStatus.OK).json({
             message: 'Successfully',
             data

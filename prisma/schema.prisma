@@ -42,3 +42,46 @@ model SocialAccount {
   userId       Int?
   user         User?  @relation(fields: [userId], references: [id])
 }
+
+model TheSportsCenter {
+  id           Int    @id @default(autoincrement())
+  name         String 
+  address       String
+  status        Boolean         @default(true)
+  view          Int          @default(0)
+  isDeleted     Boolean @default(false)
+  latitude      Float
+  longtitude    Float
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  theSportsCenterImages TheSportsCenterImages[]
+  openingHour   OpeningHour[] 
+}
+
+model TheSportsCenterImages {
+  id           Int    @id @default(autoincrement())
+  imageUrl     String
+  sportsCenterCloudinaryId String
+  theSportsCenterId Int
+  theSportsCenter TheSportsCenter @relation(fields: [theSportsCenterId], references: [id])
+}
+
+model OpeningHour {
+  id           Int    @id @default(autoincrement())
+  dayOfWeek    Int       
+  openingTime  String
+  closingTime  String
+  sportsCenterId Int
+  sportsCenter TheSportsCenter @relation(fields: [sportsCenterId], references: [id])
+}
+
+model Category {
+  id           Int    @id @default(autoincrement())
+  type    String
+  description String
+  imageUrl String
+  categoryCloudinaryId String
+  isDeleted Boolean @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}

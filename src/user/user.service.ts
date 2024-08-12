@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { UserFilterDto } from './dto/user-filter.dto';
 
 @Injectable()
 export class UserService {
@@ -10,14 +11,45 @@ export class UserService {
         private cloudinaryService: CloudinaryService
     ) {}
 
-    async getAllUser () : Promise<any> {
+    async getAllUser (query: UserFilterDto) : Promise<any> {
+        const items_per_page = query.items_per_page || 10;
+        const page = Number(query.page) || 1;
+        const skip = (page - 1) * items_per_page;
+        
+        const searchCondition: any = query.search ? {
+            fullName: {
+                contains: query.search,
+                mode: 'insensitive' 
+            }
+        } : {};
+
         const listUser = this.prisma.user.findMany({
+            take: items_per_page,
+            skip,
+            where: {
+                role: 'USER',
+                ...searchCondition
+            }
+        });
+        const count = this.prisma.user.count({
             where: {
                 role: 'USER'
             }
-        })
-        return listUser;
-    }
+        });
+
+        const [data, total] = await Promise.all([listUser, count]);
+        const lastPage = Math.ceil(total / items_per_page);
+        const previousPage = page - 1 < 1 ? null : page - 1;
+        const nextPage = page + 1 > lastPage ? null : page + 1;
+        return {
+            data,
+            currentPage: page,
+            lastPage,
+            previousPage,
+            nextPage,
+            total
+        };
+    } 
 
     async getUserById (id: number) : Promise<any> {
         const userDetail = this.prisma.user.findUnique({
@@ -116,7 +148,7 @@ export class UserService {
         if (existingUser.background !== null && existingUser.background.length > 0) {
             await this.cloudinaryService.deleteFile(existingUser.backgroundCloudinaryId);
         } 
-       console.log('123');
+       
         
         const uploadResult = await this.cloudinaryService.uploadFile(file, 500, 500);
        
@@ -128,6 +160,6 @@ export class UserService {
                 background: uploadResult.secure_url,
                 backgroundCloudinaryId: uploadResult.public_id
             }
-        })
+        });
     }
 }
