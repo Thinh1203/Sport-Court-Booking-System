@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient {
     async onModuleInit() {
         await this.$connect()
-          .then(() => console.log('Connected to DB'))
+          .then(() => console.log('Connected to DB', new Date().toISOString()))
           .catch((err) => console.log(err));
       }
 }
