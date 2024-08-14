@@ -6,14 +6,16 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { SportsCenterModule } from './sports-center/sports-center.module';
-import { SportsCourtsModule } from './sports-court/sports-courts.module';
 import { CategoryModule } from './category/category.module';
+import { AmenityModule } from './amenity/amenity.module';
+import { CourtModule } from './court/court.module';
+import { HeadquartersModule } from './headquarters/headquarters.module';
 
 
 @Module({
   imports: [   
     ConfigModule.forRoot(),
-    UserModule, AuthModule, CloudinaryModule, SportsCenterModule, SportsCourtsModule, CategoryModule,
+    UserModule, AuthModule, CloudinaryModule, SportsCenterModule, CategoryModule, AmenityModule, CourtModule, HeadquartersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

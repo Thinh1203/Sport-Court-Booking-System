@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Patch, Post, Put, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Patch, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { Response } from 'express';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -91,7 +91,8 @@ export class UserController {
    async uploadBackgroundById(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File, 
-    @Res() res: Response) : Promise<any> {
+    @Res() res: Response
+    ) : Promise<any> {
     try {
         await this.userService.uploadBackgroundById(Number(id), file);
             return res.status(HttpStatus.CREATED).json({

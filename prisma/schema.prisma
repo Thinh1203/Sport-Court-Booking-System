@@ -42,6 +42,14 @@ model SocialAccount {
   userId       Int?
   user         User?  @relation(fields: [userId], references: [id])
 }
+model Headquarters {
+  id           Int    @id @default(autoincrement())
+  name String
+  description String
+  imageUrl String
+  imageCloudinaryId String
+  theSportsCenter TheSportsCenter[]
+}
 
 model TheSportsCenter {
   id           Int    @id @default(autoincrement())
@@ -56,6 +64,9 @@ model TheSportsCenter {
   updatedAt     DateTime        @updatedAt
   theSportsCenterImages TheSportsCenterImages[]
   openingHour   OpeningHour[] 
+  theSportCenterCourt Court[]
+  headquartersId Int?
+  headquarters Headquarters? @relation(fields: [headquartersId], references: [id])
 }
 
 model TheSportsCenterImages {
@@ -84,4 +95,34 @@ model Category {
   isDeleted Boolean @default(false)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  categoryCourt Court[]
+}
+
+model Court {
+  id           Int    @id @default(autoincrement())
+  name String
+  price Float
+  discount Float    @default(0)
+  isDeleted Boolean @default(false)
+  imageUrl  String
+  time      Int
+  courtCloudinaryId String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  sportsCenterId  Int
+  isVip   Boolean @default(false)
+  sportsCenter TheSportsCenter @relation(fields: [sportsCenterId], references: [id])
+  categoryId  Int
+  category Category @relation(fields: [categoryId], references: [id])
+  amenities Amentity[]
+  attributes  Json?
+}
+
+model Amentity {
+  id           Int    @id @default(autoincrement())
+  name  String
+  description  String
+  imageUrl  String
+  amentityCloudinaryId  String 
+  courts  Court[]
 }

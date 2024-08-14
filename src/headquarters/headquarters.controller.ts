@@ -1,51 +1,50 @@
-import { BadRequestException, Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { Response } from 'express';
-import { CategoryDto } from './dto/category.dto';
+import { BadRequestException, Body, Controller, Get, HttpStatus, Param, Patch, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CategoryService } from './category.service';
-import { CategoryUpdateData } from './dto/update/data-update.dto';
+import { Response } from 'express';
+import { HeadquartersDto } from './dto/headquarters.dto';
+import { HeadquartersService } from './headquarters.service';
+import { headquartersDataUpdate } from './dto/update/data-update.dto';
 
-
-@Controller('category')
-export class CategoryController {
+@Controller('headquarters')
+export class HeadquartersController {
     constructor (
-        private readonly categoryService: CategoryService
+        private readonly headquartersService: HeadquartersService
     ) {}
 
     @Post('')
     @UseInterceptors(FileInterceptor('file'))
-    async createCategory (
+    async createHeadquarters (
         @Res() res: Response,
-        @Body() categoryDto: CategoryDto,
+        @Body() dataDto: HeadquartersDto,
         @UploadedFile() file: Express.Multer.File
     ): Promise<any> {
         try {
             if (!file) {
                 throw new BadRequestException('File is required.');
             }
-            const data = await this.categoryService.createCategory(categoryDto, file);
+            const data = await this.headquartersService.createHeadquarters(dataDto, file);
             return res.status(HttpStatus.CREATED).json({
                 code: HttpStatus.CREATED,
-                message: 'Category added successfully',
+                message: 'The headquarters added successfully',
                 data
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
                 code: HttpStatus.BAD_REQUEST,
-                message: error.message,
+                message: error.message
             });  
         }
     }
 
     @Get('')
-    async getAllCategory (
+    async getAllHeadquarters (
         @Res() res: Response
     ): Promise<any> {
         try {
-            const data = await this.categoryService.getAllCategory();
+            const data = await this.headquartersService.getAll();
             return res.status(HttpStatus.CREATED).json({
                 code: HttpStatus.CREATED,
-                message: 'List of categories: ',
+                message: 'List of headquarters: ',
                 data
             });
         } catch (error) {
@@ -57,15 +56,15 @@ export class CategoryController {
     } 
 
     @Get(':id')
-    async getCategoryById (
+    async getHeadquartersById (
         @Res() res: Response,
         @Param('id') id: string
     ): Promise<any> {
         try {
-            const data = await this.categoryService.getCategoryById(Number(id));
+            const data = await this.headquartersService.getOneById(Number(id));
             return res.status(HttpStatus.CREATED).json({
                 code: HttpStatus.CREATED,
-                message: 'Detail: ',
+                message: 'The headquarters detail: ',
                 data
             });
         } catch (error) {
@@ -79,41 +78,41 @@ export class CategoryController {
     @Patch(':id')
     @UseInterceptors(FileInterceptor('file'))
     async updateCategoryById(
-        @Body() categoryData: CategoryUpdateData,
+        @Body() headquartersData: headquartersDataUpdate,
         @UploadedFile() file: Express.Multer.File,
         @Param('id') id: string,
         @Res() res: Response
     ): Promise<any> {
         try {
-            await this.categoryService.updateCategoryById(Number(id), categoryData, file || null);
+            await this.headquartersService.updateById(Number(id), headquartersData, file || null);
             return res.status(HttpStatus.OK).json({
                 code: HttpStatus.OK,
-                message: 'Category updated successfully',
+                message: 'The headquarters updated successfully',
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
                 code: HttpStatus.BAD_REQUEST,
-                message: error.message,
+                message: error.message
             });  
         }
     }
 
-    @Patch('delete/:id')
-    async deleteCategoryById(
-        @Param('id') id: string,
-        @Res() res: Response
-    ): Promise<any> {
-        try {
-            await this.categoryService.deleteCategoryById(Number(id));
-            return res.status(HttpStatus.OK).json({
-                code: HttpStatus.OK,
-                message: 'Category deleted successfully',
-            });
-        } catch (error) {
-            return res.status(HttpStatus.BAD_REQUEST).json({
-                code: HttpStatus.BAD_REQUEST,
-                message: error.message,
-            });  
-        }
-    }
+    // @Patch('delete/:id')
+    // async deleteCategoryById(
+    //     @Param('id') id: string,
+    //     @Res() res: Response
+    // ): Promise<any> {
+    //     try {
+    //         // await this.categoryService.deleteCategoryById(Number(id));
+    //         return res.status(HttpStatus.OK).json({
+    //             code: HttpStatus.OK,
+    //             message: 'Category deleted successfully',
+    //         });
+    //     } catch (error) {
+    //         return res.status(HttpStatus.BAD_REQUEST).json({
+    //             code: HttpStatus.BAD_REQUEST,
+    //             message: error.message,
+    //         });  
+    //     }
+    // }
 }
