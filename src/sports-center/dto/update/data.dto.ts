@@ -5,4 +5,5 @@ export class SportsCenterDataDto {
     view: number;
     latitude: number;
     longtitude: number;
+    isDeleted: boolean;
 }

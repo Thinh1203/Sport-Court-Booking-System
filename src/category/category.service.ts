@@ -2,7 +2,8 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CategoryDto } from './dto/category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { CategoryUpdateData } from './dto/update/data-update.to';
+import { CategoryUpdateData } from './dto/update/data-update.dto';
+
 
 @Injectable()
 export class CategoryService {
@@ -32,7 +33,11 @@ export class CategoryService {
     }
 
     async getAllCategory (): Promise<any> {
-        return await this.prisma.category.findMany();
+        return await this.prisma.category.findMany({
+            where: {
+                isDeleted: false
+            }
+        });
     }
 
     async getCategoryById (id: number): Promise<any> {
@@ -61,6 +66,7 @@ export class CategoryService {
         if (file !== null) {
             await this.cloudinaryService.deleteFile(existingCategory.categoryCloudinaryId);
             const uploadResult = await this.cloudinaryService.uploadFile(file, 100, 100);
+       
             return await this.prisma.category.update({
                 where: {
                     id
@@ -68,20 +74,24 @@ export class CategoryService {
                 data: {
                     type: categoryData.type ?? existingCategory.type,
                     description: categoryData.description ?? existingCategory.description,
+                    isDeleted: categoryData.isDeleted ?? existingCategory.isDeleted,
                     imageUrl: uploadResult.secure_url,
                     categoryCloudinaryId: uploadResult.public_id
                 }
             });
         }
+
         return await this.prisma.category.update({
             where: {
                 id
             },
             data: {
+                isDeleted: categoryData.isDeleted ?? existingCategory.isDeleted,
                 type: categoryData.type ?? existingCategory.type,
                 description: categoryData.description ?? existingCategory.description,
             }
         });
+
     }
 
     async deleteCategoryById (id: number): Promise<any> {

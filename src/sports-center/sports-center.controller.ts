@@ -57,6 +57,26 @@ export class SportsCenterController {
         }
     }
 
+    @Get(':id')
+    async getOneById (
+        @Param('id') id: string,
+        @Res() res: Response
+    ): Promise<any> {
+        try {
+            const data = await this.sportsCenterService.getOneById(Number(id));
+            return res.status(HttpStatus.CREATED).json({
+                code: HttpStatus.CREATED,
+                message: 'Detail: ',
+                data
+            });
+        } catch (error) {
+            return res.status(HttpStatus.BAD_REQUEST).json({
+                code: HttpStatus.BAD_REQUEST,
+                message: error.message,
+            });  
+        }
+    }
+
     @Patch(':id')
     async updateSportsCenterInformation (
         @Res() res: Response,
