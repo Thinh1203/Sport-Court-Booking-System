@@ -75,10 +75,10 @@ export class CourtController {
         @Res() res: Response
     ): Promise<any> {
         try {
-            const data = await this.courtService.updateById(Number(id), dataUpdate);
+
+            await this.courtService.updateById(Number(id), dataUpdate);
             return res.status(HttpStatus.CREATED).json({
-                message: 'Detail: ',
-                data
+                message: 'Updated successfully: '
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({

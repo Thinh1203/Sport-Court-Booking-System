@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Role, UpdateUserDto } from './dto/update-user.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UserFilterDto } from './dto/user-filter.dto';
 
@@ -72,6 +72,14 @@ export class UserService {
         if (!existingUser) {
             throw new HttpException('User not found', HttpStatus.BAD_REQUEST)
         } 
+        let newRole: any = existingUser.role;
+
+        if (data.role && data.role === 'ADMIN') {
+          newRole = Role.ADMIN;
+        } 
+        if (data.role && data.role === 'USER') {
+          newRole = Role.USER;
+        }
         return await this.prisma.user.update({
             where: {
                 id
@@ -86,7 +94,7 @@ export class UserService {
                 phoneNumber: data.phoneNumber ?? existingUser.password,
                 facebookId: existingUser.facebookId,
                 googleId: existingUser.googleId,
-                role: existingUser.role
+                role: newRole
             }
         })
     } 
