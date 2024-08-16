@@ -10,9 +10,9 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
     constructor (
-        private prisma: PrismaService,
-        private jwtService: JwtService,
-        private configService: ConfigService
+        private readonly prisma: PrismaService,
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService
     ) {}
     
     private async hashPassword (password: string) : Promise<string> {
@@ -22,14 +22,19 @@ export class AuthService {
     }
 
     private async generateToken (payload: { id: number, email: string, phoneNumber: string, role: string }) : Promise<string | any> {
-        const access_token = await this.jwtService.signAsync(payload);
+        
+        const access_token = await this.jwtService.signAsync(payload, {
+            secret: this.configService.get<string>('SECRET_KEY'),
+            expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRES_In')
+        }); 
+        
         const refresh_token = await this.jwtService.signAsync(payload,
            {
             secret: this.configService.get<string>('SECRET_KEY'),
             expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRES_In')
            }
         );
-       
+
         return { access_token, refresh_token };
     }
 
@@ -97,6 +102,7 @@ export class AuthService {
                 ]
             }
         });
+        
         if (!existingUser) {
             throw new HttpException('User not found', HttpStatus.NOT_FOUND)
         }

@@ -3,7 +3,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { SportsCenterDto } from './dto/sports-center.dto';
 import { Response } from 'express';
 import { SportsCenterService } from './sports-center.service';
-import { SportsCenterFilterDto } from './dto/sports-center.filter.dto';
+import { FilterByCommentDto, SportsCenterFilterDto } from './dto/sports-center.filter.dto';
 import { SportsCenterDataDto } from './dto/update/data.dto';
 
 @Controller('sports-center')
@@ -58,14 +58,15 @@ export class SportsCenterController {
     }
 
     @Get(':id')
-    async getOneById (
+    async getOneById (  
         @Param('id') id: string,
+        @Query() filterByCommentDto: FilterByCommentDto,
         @Res() res: Response
     ): Promise<any> {
         try {
-            const data = await this.sportsCenterService.getOneById(Number(id));
-            return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+            const data = await this.sportsCenterService.getOneById(Number(id), filterByCommentDto);
+            return res.status(HttpStatus.OK).json({
+                code: HttpStatus.OK,
                 message: 'Detail: ',
                 data
             });
@@ -85,8 +86,8 @@ export class SportsCenterController {
     ): Promise<any> {
         try {
             await this.sportsCenterService.updateSportsCenterInformation(Number(id), dataUpdate);
-            return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+            return res.status(HttpStatus.OK).json({
+                code: HttpStatus.OK,
                 message: 'Updated successfully'
             });
         } catch (error) {
@@ -104,8 +105,8 @@ export class SportsCenterController {
     ): Promise<any> {
         try {
             await this.sportsCenterService.deleteSportsCenter(Number(id));
-            return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+            return res.status(HttpStatus.OK).json({
+                code: HttpStatus.OK,
                 message: 'Deleted successfully'
             });
         } catch (error) {

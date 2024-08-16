@@ -105,7 +105,8 @@ export class CourtService {
                 where: {id},
                 include: {
                     category: true, 
-                    amenities: true
+                    amenities: true,
+                    booking: true
                 }
             },
     );
@@ -128,7 +129,7 @@ export class CourtService {
         if (!existingCourt) {
             throw new HttpException('Court not found', HttpStatus.NOT_FOUND);
         }
-        const amenitiesToSet = data.amenities.length > 0 
+        const amenitiesToSet = data?.amenities
         ? data.amenities.map(id => ({ id })) 
         : existingCourt.amenities.map(a => ({ id: a.id }));
         

@@ -29,6 +29,8 @@ model User {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   socialAccount SocialAccount[]
+  booking Booking[]
+  comments Comment[]
 }
 
 model SocialAccount {
@@ -77,6 +79,21 @@ model TheSportsCenterImages {
   theSportsCenter TheSportsCenter @relation(fields: [theSportsCenterId], references: [id])
 }
 
+model Comment {
+  id           Int    @id @default(autoincrement())
+  star  Int 
+  text  String?
+  imageUrl String?
+  commentImageCloudinaryId String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  userId Int
+  user  User  @relation(fields: [userId], references: [id])
+  courtId Int
+  court Court @relation(fields: [courtId], references: [id])
+
+}
+
 model OpeningHour {
   id           Int    @id @default(autoincrement())
   dayOfWeek    Int       
@@ -116,6 +133,10 @@ model Court {
   category Category @relation(fields: [categoryId], references: [id])
   amenities Amentity[]
   attributes  Json?
+  flagTime  Int?
+  maximumTime Int?
+  booking Booking[]
+  comments  Comment[]
 }
 
 model Amentity {
@@ -125,4 +146,25 @@ model Amentity {
   imageUrl  String
   amentityCloudinaryId  String 
   courts  Court[]
+}
+
+model Booking {
+  id           Int    @id @default(autoincrement())
+  startDate DateTime
+  startTime  DateTime
+  timeBooking Int
+  endTime   DateTime
+  statusBooking String
+  fullName  String
+  phoneNumber String
+  email String
+  paymentMethod String
+  paymentStatus Boolean
+  totalPrice  Float
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  courtId Int
+  court Court @relation(fields: [courtId], references: [id])
 }
