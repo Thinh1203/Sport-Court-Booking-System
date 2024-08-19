@@ -26,13 +26,13 @@ export class SportsCenterController {
             }
             const data = await this.sportsCenterService.createSportsCenter(sportsCenterDto, files);
             return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+                statusCode: HttpStatus.CREATED,
                 message: 'Added successfully',
                 data: data
             })
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
-                code: HttpStatus.BAD_REQUEST,
+                statusCode: HttpStatus.BAD_REQUEST,
                 message: error.message,
             });  
         }
@@ -44,14 +44,14 @@ export class SportsCenterController {
     ): Promise<any> {
         try {
             const data = await this.sportsCenterService.getAllSportsCenter(query);
-            return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+            return res.status(HttpStatus.OK).json({
+                statusCode: HttpStatus.OK,
                 message: 'List of SportsCenter: ',
                 data
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
-                code: HttpStatus.BAD_REQUEST,
+                statusCode: HttpStatus.BAD_REQUEST,
                 message: error.message,
             });  
         }
@@ -66,13 +66,13 @@ export class SportsCenterController {
         try {
             const data = await this.sportsCenterService.getOneById(Number(id), filterByCommentDto);
             return res.status(HttpStatus.OK).json({
-                code: HttpStatus.OK,
+                statusCode: HttpStatus.OK,
                 message: 'Detail: ',
                 data
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
-                code: HttpStatus.BAD_REQUEST,
+                statusCode: HttpStatus.BAD_REQUEST,
                 message: error.message,
             });  
         }
@@ -87,12 +87,12 @@ export class SportsCenterController {
         try {
             await this.sportsCenterService.updateSportsCenterInformation(Number(id), dataUpdate);
             return res.status(HttpStatus.OK).json({
-                code: HttpStatus.OK,
+                statusCode: HttpStatus.OK,
                 message: 'Updated successfully'
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
-                code: HttpStatus.BAD_REQUEST,
+                statusCode: HttpStatus.BAD_REQUEST,
                 message: error.message,
             });  
         }
@@ -106,12 +106,12 @@ export class SportsCenterController {
         try {
             await this.sportsCenterService.deleteSportsCenter(Number(id));
             return res.status(HttpStatus.OK).json({
-                code: HttpStatus.OK,
+                statusCode: HttpStatus.OK,
                 message: 'Deleted successfully'
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
-                code: HttpStatus.BAD_REQUEST,
+                statusCode: HttpStatus.BAD_REQUEST,
                 message: error.message,
             });  
         }

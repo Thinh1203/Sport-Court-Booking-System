@@ -11,13 +11,14 @@ import { AmenityModule } from './amenity/amenity.module';
 import { CourtModule } from './court/court.module';
 import { HeadquartersModule } from './headquarters/headquarters.module';
 import { CommentModule } from './comment/comment.module';
+import { BookingModule } from './booking/booking.module';
 
 
 @Module({
   imports: [   
     ConfigModule.forRoot(),
     UserModule, AuthModule, CloudinaryModule, SportsCenterModule, CategoryModule, AmenityModule, CourtModule, HeadquartersModule, 
-    CommentModule,
+    CommentModule, BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

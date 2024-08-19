@@ -272,7 +272,7 @@ export class SportsCenterService {
                 include: {
                     theSportCenterCourt: {
                         include: {
-                            comments: {
+                            comments: { 
                                 ...(query.createdAt ? {
                                     orderBy: {
                                         createdAt: "asc"
@@ -346,12 +346,13 @@ export class SportsCenterService {
                     const timeInMinutes = Math.floor(timeDiff / (1000 * 60));
                     return {
                     id: comment.id,
-                    start: comment.star,
+                    star: comment.star,
                     text: comment.text,
                     image: comment.imageUrl,
                     commentImageCloudinaryId: comment.commentImageCloudinaryId,
                     timeInHours: timeInHours,
                     timeInMinutes: timeInMinutes,
+                    createdAt: comment.createdAt,
                     court: comment.court.name,
                     user: comment.user.fullName,
                     userId: comment.user.id,

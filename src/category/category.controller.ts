@@ -25,7 +25,7 @@ export class CategoryController {
             }
             const data = await this.categoryService.createCategory(categoryDto, file);
             return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+                statusCode: HttpStatus.CREATED,
                 message: 'Category added successfully',
                 data
             });
@@ -43,8 +43,8 @@ export class CategoryController {
     ): Promise<any> {
         try {
             const data = await this.categoryService.getAllCategory();
-            return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+            return res.status(HttpStatus.OK).json({
+                statusCode: HttpStatus.OK,
                 message: 'List of categories: ',
                 data
             });
@@ -63,8 +63,8 @@ export class CategoryController {
     ): Promise<any> {
         try {
             const data = await this.categoryService.getCategoryById(Number(id));
-            return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+            return res.status(HttpStatus.OK).json({
+                statusCode: HttpStatus.OK,
                 message: 'Detail: ',
                 data
             });
@@ -87,7 +87,7 @@ export class CategoryController {
         try {
             await this.categoryService.updateCategoryById(Number(id), categoryData, file || null);
             return res.status(HttpStatus.OK).json({
-                code: HttpStatus.OK,
+                statusCode: HttpStatus.OK,
                 message: 'Category updated successfully',
             });
         } catch (error) {
@@ -106,7 +106,7 @@ export class CategoryController {
         try {
             await this.categoryService.deleteCategoryById(Number(id));
             return res.status(HttpStatus.OK).json({
-                code: HttpStatus.OK,
+                statusCode: HttpStatus.OK,
                 message: 'Category deleted successfully',
             });
         } catch (error) {

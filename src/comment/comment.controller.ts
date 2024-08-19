@@ -25,13 +25,13 @@ export class CommentController {
             
             const data = await this.commentService.createComment(commentDto, file || null, Number(user.id));
             return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+                statusCode: HttpStatus.CREATED,
                 message: 'Comment successfully',
                 data
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
-                code: HttpStatus.BAD_REQUEST,
+                statusCode: HttpStatus.BAD_REQUEST,
                 message: error.message,
             });  
         }
