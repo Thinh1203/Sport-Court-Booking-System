@@ -16,7 +16,7 @@ model User {
   id            Int             @id @default(autoincrement())
   email         String          
   password      String
-  phoneNumber   String
+  phoneNumber   String?
   fullName      String
   role          Role            @default(USER)
   avatar        String?
@@ -153,7 +153,6 @@ model Booking {
   startDate DateTime
   startTime  DateTime
   timeBooking Int
-  endTime   DateTime
   statusBooking String
   fullName  String
   phoneNumber String

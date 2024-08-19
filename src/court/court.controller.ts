@@ -25,11 +25,13 @@ export class CourtController {
 
             const data = await this.courtService.createCourt(courtDto, file);
             return res.status(HttpStatus.CREATED).json({
+                statusCode: HttpStatus.CREATED,
                 message: 'Court created successfully',
                 data
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
+                statusCode: HttpStatus.BAD_REQUEST,
                 message: error.message
             });
         }
@@ -39,12 +41,14 @@ export class CourtController {
     async getAll (@Res() res: Response): Promise<any> {
         try {
             const data = await this.courtService.getAll();
-            return res.status(HttpStatus.CREATED).json({
+            return res.status(HttpStatus.OK).json({
+                statusCode: HttpStatus.OK,
                 message: 'List of courts: ',
                 data
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
+                statusCode: HttpStatus.BAD_REQUEST,
                 message: error.message
             });
         }
@@ -57,12 +61,14 @@ export class CourtController {
     ): Promise<any> {
         try {
             const data = await this.courtService.getById(Number(id));
-            return res.status(HttpStatus.CREATED).json({
+            return res.status(HttpStatus.OK).json({
+                statusCode: HttpStatus.OK,
                 message: 'Detail: ',
                 data
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
+                statusCode: HttpStatus.BAD_REQUEST,
                 message: error.message
             });
         }
@@ -77,11 +83,13 @@ export class CourtController {
         try {
 
             await this.courtService.updateById(Number(id), dataUpdate);
-            return res.status(HttpStatus.CREATED).json({
+            return res.status(HttpStatus.OK).json({
+                statusCode: HttpStatus.OK,
                 message: 'Updated successfully: '
             });
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
+                statusCode: HttpStatus.BAD_REQUEST,
                 message: error.message
             });
         }

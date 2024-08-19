@@ -24,7 +24,7 @@ export class HeadquartersController {
             }
             const data = await this.headquartersService.createHeadquarters(dataDto, file);
             return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+                statusCode: HttpStatus.CREATED,
                 message: 'The headquarters added successfully',
                 data
             });
@@ -42,8 +42,8 @@ export class HeadquartersController {
     ): Promise<any> {
         try {
             const data = await this.headquartersService.getAll();
-            return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+            return res.status(HttpStatus.OK).json({
+                statusCode: HttpStatus.OK,
                 message: 'List of headquarters: ',
                 data
             });
@@ -62,8 +62,8 @@ export class HeadquartersController {
     ): Promise<any> {
         try {
             const data = await this.headquartersService.getOneById(Number(id));
-            return res.status(HttpStatus.CREATED).json({
-                code: HttpStatus.CREATED,
+            return res.status(HttpStatus.OK).json({
+                statusCode: HttpStatus.OK,
                 message: 'The headquarters detail: ',
                 data
             });
@@ -86,7 +86,7 @@ export class HeadquartersController {
         try {
             await this.headquartersService.updateById(Number(id), headquartersData, file || null);
             return res.status(HttpStatus.OK).json({
-                code: HttpStatus.OK,
+                statusCode: HttpStatus.OK,
                 message: 'The headquarters updated successfully',
             });
         } catch (error) {

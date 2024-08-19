@@ -29,7 +29,8 @@ export class UserService {
             where: {
                 role: 'USER',
                 ...searchCondition
-            }
+            },
+            
         });
         const count = this.prisma.user.count({
             where: {
@@ -42,7 +43,22 @@ export class UserService {
         const previousPage = page - 1 < 1 ? null : page - 1;
         const nextPage = page + 1 > lastPage ? null : page + 1;
         return {
-            data,
+            data: data.map(e => ({
+                id: e.id,
+                email: e.email,
+                phoneNumber: e.phoneNumber,
+                fullName: e.fullName,
+                role: e.role,
+                avatar: e.avatar,
+                background: e.background,
+                avatarCloudinaryId: e.avatarCloudinaryId,
+                backgroundCloudinaryId: e.backgroundCloudinaryId,
+                isBlocked: e.isBlocked,
+                googleId: e.googleId,
+                facebookId: e.facebookId,
+                createdAt: e.createdAt,
+                updatedAt: e.updatedAt
+            })),
             currentPage: page,
             lastPage,
             previousPage,
@@ -51,16 +67,61 @@ export class UserService {
         };
     } 
 
-    async getUserById (id: number) : Promise<any> {
-        const userDetail = this.prisma.user.findUnique({
+    async getUserByToken(id: number): Promise<any> {
+        const userDetail = await this.prisma.user.findFirst({
             where: {
                 id
             }
         });
+
         if (!userDetail) {
             throw new HttpException('User not found', HttpStatus.BAD_REQUEST)
         }
-        return userDetail;
+        return {
+            id: userDetail.id,
+            email: userDetail.email,
+            phoneNumber: userDetail.phoneNumber,
+            fullName: userDetail.fullName,
+            role: userDetail.role,
+            avatar: userDetail.avatar,
+            background: userDetail.background,
+            avatarCloudinaryId: userDetail.avatarCloudinaryId,
+            backgroundCloudinaryId: userDetail.backgroundCloudinaryId,
+            isBlocked: userDetail.isBlocked,
+            googleId: userDetail.googleId,
+            facebookId: userDetail.facebookId,
+            createdAt: userDetail.createdAt,
+            updatedAt: userDetail.updatedAt
+        };
+    }
+
+    async getUserById (id: number) : Promise<any> {
+        const userDetail = await this.prisma.user.findUnique({
+            where: {
+                id
+            }
+        });
+
+        if (!userDetail) {
+            throw new HttpException('User not found', HttpStatus.BAD_REQUEST)
+        }
+
+        return {
+            id: userDetail.id,
+            email: userDetail.email,
+            phoneNumber: userDetail.phoneNumber,
+            fullName: userDetail.fullName,
+            role: userDetail.role,
+            avatar: userDetail.avatar,
+            background: userDetail.background,
+            avatarCloudinaryId: userDetail.avatarCloudinaryId,
+            backgroundCloudinaryId: userDetail.backgroundCloudinaryId,
+            isBlocked: userDetail.isBlocked,
+            googleId: userDetail.googleId,
+            facebookId: userDetail.facebookId,
+            createdAt: userDetail.createdAt,
+            updatedAt: userDetail.updatedAt
+        };
     }
 
     async updateUserById (id: number, data: UpdateUserDto) : Promise<any> {
