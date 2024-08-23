@@ -1,8 +1,9 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import axios from 'axios';
 import * as crypto from 'crypto';
+import { BookingService } from 'src/booking/booking.service';
 
 @Injectable()
 export class AppotapayService {
@@ -13,6 +14,8 @@ export class AppotapayService {
   constructor(
     private readonly configService: ConfigService,   
     private readonly jwtService: JwtService,
+    @Inject(forwardRef(() => BookingService))
+    private readonly bookingService: BookingService
   ) {
     this.apiKey = this.configService.get<string>('APPOTAPAY_API_KEY');
     this.secretKey = this.configService.get<string>('APPOTAPAY_API_SECRETKEY');
@@ -53,38 +56,6 @@ export class AppotapayService {
   async createTransaction(bill: any): Promise<any> {
     
     const url = 'https://payment.dev.appotapay.com/api/v2/orders/payment';
-    // const url = 'https://payment.dev.appotapay.com/api/v2/orders/create-payment';
-    
-    // const payload = {
-    //   "transaction": {
-    //     "amount": 10000,
-    //     "currency": "VND",
-    //     "bankCode": "VISA",
-    //     "paymentMethod": "VISA",
-    //     "action": "PAY"
-    //   },
-    //   "sourceOfFunds": {
-    //     "type": "card",
-    //     "card": {
-    //       "cardNumber": "4000000000001075",
-    //       "cardHolderName": "NGUYEN VAN A",
-    //       "cardMonth": "03",
-    //       "cardYear": "27",
-    //       "cvv": "123"
-    //     }
-    //   },
-    //   "partnerReference": {
-    //     "order": {
-    //       "id": "5f61cf4f41e2b",
-    //       "info": "test thanh toan",
-    //       "extraData": ""
-    //     },
-    //     "notificationConfig": {
-    //       "notifyUrl": "https://devtool.vn/ipn",
-    //       "redirectUrl": "https://devtool.vn/redirect",
-    //     }
-    //   }
-    // }
 
     const payload = {
       transaction: {
@@ -140,15 +111,15 @@ export class AppotapayService {
     }
   }
   
-  async processingReturnedResult(data: string, signature: string) {
+  async processingReturnedResult(data: string, signature: string): Promise<string | Object> {
     try {
       const decodeReturnedData = Buffer.from(data, 'base64').toString('utf-8');
       let jsonData: any;
       jsonData = JSON.parse(decodeReturnedData);
-        // await this.bookingService.updateBookingBill(jsonData);
-      return jsonData 
+      const result = await this.bookingService.updateBookingBill(jsonData);
+      return result; 
     } catch (error) {
-      return { message: 'Invalid data' };
+      return { message: error };
     }
   }
 }

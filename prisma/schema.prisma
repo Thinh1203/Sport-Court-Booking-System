@@ -121,9 +121,7 @@ model Court {
   price Float
   discount Float    @default(0)
   isDeleted Boolean @default(false)
-  imageUrl  String
   time      Int
-  courtCloudinaryId String
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   sportsCenterId  Int
@@ -137,6 +135,15 @@ model Court {
   maximumTime Int?
   booking Booking[]
   comments  Comment[]
+  courtImages CourtImages[]
+}
+
+model CourtImages {
+  id           Int    @id @default(autoincrement())
+  imageUrl     String
+  imageId String
+  courtId Int
+  court Court @relation(fields: [courtId], references: [id])
 }
 
 model Amentity {
@@ -171,7 +178,7 @@ model Booking {
 model Bill {
   id           Int    @id @default(autoincrement())
   paymentMethod String
-  paymentStatus Boolean @default(false)  
+  paymentStatus String 
   amount Int
   booking Booking[]
   userId Int

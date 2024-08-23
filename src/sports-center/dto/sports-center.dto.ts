@@ -22,11 +22,11 @@ export class SportsCenterDto {
     address: string;
 
     @IsNotEmpty()
-    @IsDecimal({ force_decimal: true, decimal_digits: '15'})
+    // @IsDecimal({ force_decimal: true, decimal_digits: '15'})
     latitude: number;
 
     @IsNotEmpty()
-    @IsDecimal({ force_decimal: true, decimal_digits: '15'})
+    // @IsDecimal({ force_decimal: true, decimal_digits: '15'})
     longtitude: number;
 
     @IsArray()

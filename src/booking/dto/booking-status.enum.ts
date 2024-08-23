@@ -5,3 +5,9 @@ export enum BookingStatus {
     Success = "SUCCESS",
     Cancelled = "CANCELLED"
 }
+
+export enum BillStatus {
+    Success = "SUCCESS",
+    Cancelled = "CANCELLED",
+    Pending = "PENDING"
+}

@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Bill" ALTER COLUMN "paymentStatus" DROP DEFAULT,
+ALTER COLUMN "paymentStatus" SET DATA TYPE TEXT;

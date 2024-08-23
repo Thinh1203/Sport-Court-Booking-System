@@ -3,7 +3,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ListBooking } from './dto/booking.dto';
 import { AppotapayService } from 'src/appotapay/appotapay.service';
 import * as moment from 'moment-timezone';
-import { BookingStatus } from './dto/booking-status.enum';
+import { BillStatus, BookingStatus } from './dto/booking-status.enum';
+import { BookingFilterDto } from './dto/booking-filter.dto';
 
 @Injectable()
 export class BookingService {
@@ -15,16 +16,69 @@ export class BookingService {
     private convertDateTime(dateTime: string): moment.Moment {
         return moment.tz(dateTime, 'Asia/Ho_Chi_Minh');
     } 
-    async updateBookingBill(billId: number): Promise<any> {
-        await this.prisma.bill.update({
-            where: {
-                id: billId
-            },
-            data: {
-                paymentStatus: true
-            }
-        });
-        return
+    async updateBookingBill(data: any): Promise<any> {
+       try {
+        if (data.transaction.errorCode === 0) {
+            const bill = await this.prisma.bill.update({
+                where: {
+                    id: Number(data.partnerReference.order.id)
+                },
+                data: {
+                    paymentStatus: BillStatus.Success
+                }
+            });        
+            
+            await this.prisma.billDetail.create({
+                data: {
+                    billId: bill.id,
+                    transactionId: String(data.transaction.transactionId),
+                    reconciliationId: String(data.transaction.reconciliationId),
+                    partnerCode: String(data.transaction.partnerCode),
+                    status: String(data.transaction.status),
+                    errorCode: Number(data.transaction.errorCode),
+                    errorMessage: String(data.transaction.errorMessage),
+                    orderAmount: Number(data.transaction.orderAmount),
+                    amount: Number(data.transaction.amount),
+                    discountAmount: Number(data.transaction.discountAmount),
+                    currency: String(data.transaction.currency),
+                    bankCode: String(data.transaction.bankCode),
+                    paymentMethod: String(data.transaction.paymentMethod),
+                    action: String(data.transaction.action),
+                    clientIp: String(data.transaction.clientIp),
+                    createdAt: String(data.transaction.createdAt),
+                    updatedAt: String(data.transaction.updatedAt)
+                }
+            });
+            return 'success';
+        }
+
+        if (data.transaction.errorCode === 38 || data.transaction.errorMessage === 77) {
+            const notes = 'Payment Cancelled';
+            const bill = await this.prisma.bill.update({
+                where: {
+                    id: Number(data.partnerReference.order.id)
+                },
+                data: {
+                    paymentStatus: BillStatus.Cancelled
+                }
+            }); 
+
+            await this.prisma.booking.updateMany({
+                where: {
+                    billId: bill.id 
+                },
+                data: {
+                    statusBooking: BookingStatus.Cancelled,
+                    notes
+                }
+            });
+            return 'failed';
+        }
+        return 'error';
+       } catch (error) {
+        console.error(error); 
+        return { message: error.message || 'An error occurred during the update process' };
+       }
     }
     
     async createdBooking(data: ListBooking, userId: number): Promise<any> {
@@ -46,7 +100,8 @@ export class BookingService {
             data: {
                 amount: data.amount,
                 paymentMethod: data.paymentMethod,
-                userId
+                userId,
+                paymentStatus: BillStatus.Pending
             }
         });
         for (const element of data.bookingData) {
@@ -107,8 +162,166 @@ export class BookingService {
         
         const dataPayment = await this.appotapayService.createTransaction(newBill);
         return {
-            newBill,
+            billWithDetails,
             dataPayment
         };
+    }
+
+    async getAllBooking(query: BookingFilterDto): Promise<any> {
+        const items_per_page = query.items_per_page || 10;
+        const page = Number(query.page) || 1;
+        const skip = (page - 1) * items_per_page;        
+        
+        const listBooking = await this.prisma.bill.findMany({
+            take: items_per_page,
+            skip,
+            where: {
+                ...(query.paymentStatus ? {
+                    paymentStatus: query.paymentStatus
+                } : {}),
+                user: {
+                    ...(query.search ? {
+                        OR: [
+                            {
+                                phoneNumber: {
+                                    contains: query.search
+                                }
+                            },
+                            {
+                                fullName: {
+                                    contains: query.search
+                                }
+                            }
+                        ]
+                    } : {})
+                },
+                // booking: {
+                //     ...(query.statusBooking ? {
+                //         statusBooking: query.statusBooking
+                //     } : {})
+                // }
+            },
+            include: {
+                booking: true,
+                user: true,
+                // billDetail: true
+            }
+        });
+        const count = this.prisma.bill.count();
+        const [result, total] = await Promise.all([listBooking, count]);
+        
+        const lastPage = Math.ceil(total / items_per_page);
+        const previousPage = page - 1 < 1 ? null : page - 1;
+        const nextPage = page + 1 > lastPage ? null : page + 1;
+        const data = result.map(bill => ({
+            id: bill.id,
+            paymentMethod: bill.paymentMethod,
+            paymentStatus: bill.paymentStatus,
+            amount: bill.amount,
+            createdAt: bill.createdAt,
+            updatedAt: bill.updatedAt,
+            bookings: bill.booking.map(booking => ({
+                id: booking.id,
+                startDate: booking.startDate,
+                startTime: booking.startTime,
+                endTime: booking.endTime,
+                playTime: booking.playTime,
+                cancelTime: booking.cancelTime,
+                checkInTime: booking.checkInTime,
+                checkOutTime: booking.checkOutTime,
+                statusBooking: booking.statusBooking,
+                totalPrice: booking.totalPrice,
+                notes: booking.notes,
+                createdAt: booking.createdAt,
+                updatedAt: booking.updatedAt
+            })),
+            user: {
+                id: bill.user.id,
+                avatar: bill.user.avatar,
+                fullName: bill.user.fullName,
+                email: bill.user.email,
+                phoneNumber: bill.user.phoneNumber
+            },
+        }));
+        return {
+            data,
+            previousPage,
+            nextPage,
+            currentPage: page,
+            totalData: total
+        }
+    }
+
+    async getBookingById(id: number): Promise<any> {
+        const bill = await this.prisma.bill.findUnique({
+            where: {id},
+            include: {
+                booking: true,
+                user: true
+            }
+        });
+
+        if (!bill) {
+            throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
+        }
+
+        return {
+            id: bill.id,
+            paymentMethod: bill.paymentMethod,
+            paymentStatus: bill.paymentStatus,
+            amount: bill.amount,
+            createdAt: bill.createdAt,
+            updatedAt: bill.updatedAt,
+            bookings: bill.booking.map(booking => ({
+                id: booking.id,
+                startDate: booking.startDate,
+                startTime: booking.startTime,
+                endTime: booking.endTime,
+                playTime: booking.playTime,
+                cancelTime: booking.cancelTime,
+                checkInTime: booking.checkInTime,
+                checkOutTime: booking.checkOutTime,
+                statusBooking: booking.statusBooking,
+                totalPrice: booking.totalPrice,
+                notes: booking.notes,
+                createdAt: booking.createdAt,
+                updatedAt: booking.updatedAt
+            })),
+            user: {
+                id: bill.user.id,
+                avatar: bill.user.avatar,
+                fullName: bill.user.fullName,
+                email: bill.user.email,
+                phoneNumber: bill.user.phoneNumber
+            },
+            // billDetail: bill.billDetail,
+        };
+    }
+
+    async getBookingByUserId(userId: number): Promise<any> { 
+        
+        const bill = await this.prisma.bill.findMany({
+            where: {
+                userId
+            },
+            include: {
+                booking: {
+                    include: {
+                        court: {
+                            select: {
+                                id: true,
+                                attributes: true,
+                                isVip: true,
+                                name: true,
+                                time: true,
+                                price: true,
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        return bill;
     }
 }

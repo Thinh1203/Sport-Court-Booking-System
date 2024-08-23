@@ -32,11 +32,7 @@ export class UserService {
             },
             
         });
-        const count = this.prisma.user.count({
-            where: {
-                role: 'USER'
-            }
-        });
+        const count = this.prisma.user.count();
 
         const [data, total] = await Promise.all([listUser, count]);
         const lastPage = Math.ceil(total / items_per_page);
