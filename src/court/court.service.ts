@@ -69,6 +69,8 @@ export class CourtService {
             time: e.time,
             courtCloudinaryId: e.courtCloudinaryId,
             isVip: e.isVip,
+            flagTime: e.flagTime,
+            maximumTime: e.maximumTime,
             attributes: e.attributes,
             category: {
                 id: e.category.id,

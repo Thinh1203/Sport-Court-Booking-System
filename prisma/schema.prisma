@@ -29,7 +29,7 @@ model User {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   socialAccount SocialAccount[]
-  booking Booking[]
+  bill Bill[]
   comments Comment[]
 }
 
@@ -150,20 +150,55 @@ model Amentity {
 
 model Booking {
   id           Int    @id @default(autoincrement())
-  startDate DateTime
-  startTime  DateTime
-  timeBooking Int
+  startDate String
+  startTime  String
+  endTime  String
+  playTime Int
+  cancelTime String
+  checkInTime String?
+  checkOutTime  String?
   statusBooking String
-  fullName  String
-  phoneNumber String
-  email String
-  paymentMethod String
-  paymentStatus Boolean
   totalPrice  Float
+  notes String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  userId Int
-  user User @relation(fields: [userId], references: [id])
   courtId Int
   court Court @relation(fields: [courtId], references: [id])
+  billId Int
+  bill Bill @relation(fields: [billId], references: [id])
+}
+
+model Bill {
+  id           Int    @id @default(autoincrement())
+  paymentMethod String
+  paymentStatus Boolean @default(false)  
+  amount Int
+  booking Booking[]
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  billDetail BillDetail?
+}
+
+model BillDetail {
+  id           Int    @id @default(autoincrement())
+  transactionId String
+  reconciliationId String
+  partnerCode String
+  status String
+  errorCode Int
+  errorMessage  String
+  orderAmount Int
+  amount  Int
+  discountAmount Int
+  currency  String
+  bankCode  String
+  paymentMethod String
+  action  String
+  clientIp  String
+  createdAt String
+  updatedAt String
+  bill Bill @relation(fields: [billId], references: [id])
+  billId  Int @unique
 }

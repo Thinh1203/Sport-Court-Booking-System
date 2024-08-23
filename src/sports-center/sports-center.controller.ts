@@ -57,6 +57,46 @@ export class SportsCenterController {
         }
     }
 
+    @Get('sortByStar')
+    async getAllSportsCenterByStars (
+        @Query() query: SportsCenterFilterDto,
+        @Res() res: Response
+    ): Promise<any> {
+        try {
+            const data = await this.sportsCenterService.getAllSportsCenterByStars(query);
+            return res.status(HttpStatus.OK).json({
+                statusCode: HttpStatus.OK,
+                message: 'List of SportsCenter by stars: ',
+                data
+            });
+        } catch (error) {
+            return res.status(HttpStatus.BAD_REQUEST).json({
+                statusCode: HttpStatus.BAD_REQUEST,
+                message: error.message,
+            });  
+        }
+    }
+
+    @Get('sortByView')
+    async getAllSportsCenterByViews (
+        @Query() query: SportsCenterFilterDto,
+        @Res() res: Response
+    ): Promise<any> {
+        try {
+            const data = await this.sportsCenterService.getAllSportsCenterByViews(query);
+            return res.status(HttpStatus.OK).json({
+                statusCode: HttpStatus.OK,
+                message: 'List of SportsCenter by views: ',
+                data
+            });
+        } catch (error) {
+            return res.status(HttpStatus.BAD_REQUEST).json({
+                statusCode: HttpStatus.BAD_REQUEST,
+                message: error.message,
+            });  
+        }
+    }
+
     @Get(':id')
     async getOneById (  
         @Param('id') id: string,

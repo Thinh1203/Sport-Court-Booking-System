@@ -82,7 +82,7 @@ export class UserService {
             email: userDetail.email,
             phoneNumber: userDetail.phoneNumber,
             fullName: userDetail.fullName,
-            role: userDetail.role,
+            // role: userDetail.role,
             avatar: userDetail.avatar,
             background: userDetail.background,
             avatarCloudinaryId: userDetail.avatarCloudinaryId,

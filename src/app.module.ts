@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
@@ -12,15 +12,19 @@ import { CourtModule } from './court/court.module';
 import { HeadquartersModule } from './headquarters/headquarters.module';
 import { CommentModule } from './comment/comment.module';
 import { BookingModule } from './booking/booking.module';
+import { AppotapayModule } from './appotapay/appotapay.module';
+import { APP_PIPE } from '@nestjs/core';
 
 
 @Module({
   imports: [   
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({isGlobal: true}),
     UserModule, AuthModule, CloudinaryModule, SportsCenterModule, CategoryModule, AmenityModule, CourtModule, HeadquartersModule, 
-    CommentModule, BookingModule,
+    CommentModule, BookingModule, AppotapayModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+  ],
 })
 export class AppModule {}
