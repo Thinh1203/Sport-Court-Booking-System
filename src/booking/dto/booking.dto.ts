@@ -1,13 +1,32 @@
-// export class BookingData {
+import { IsArray, IsDate, IsInt, IsNotEmpty, IsNumber } from "class-validator";
 
-//     startDate: Date;
-//     startTime: Date;
-//     timeBooking: number;
-//     statusBooking: en
-//     fullName  String
-//     phoneNumber String
-//     email String
-//     paymentMethod String
-//     paymentStatus Boolean
-//     totalPrice  Float
-// }
+class Booking {
+    @IsNotEmpty()
+    startDate: string;
+
+    @IsNotEmpty()
+    startTime: string;
+
+    @IsNotEmpty()
+    endTime: string;
+
+    @IsNotEmpty()
+    @IsInt()
+    totalPrice: number;
+
+    @IsNotEmpty()
+    @IsInt()
+    courtId: number;
+}
+
+export class ListBooking {
+    @IsArray()
+    bookingData: Booking[];
+
+    @IsNotEmpty()
+    @IsNumber()
+    amount: number;
+
+    @IsNotEmpty()
+    paymentMethod: string;
+}

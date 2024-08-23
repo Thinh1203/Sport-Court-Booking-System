@@ -105,12 +105,18 @@ export class SportsCenterService {
     
         let listSportsCenter: any[];
         let count: number;
+        const starCounts = {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0
+        };
     
         if (query.latitude !== undefined && query.longtitude !== undefined) {            
             const allCenters = await this.prisma.theSportsCenter.findMany({ 
                 where: { isDeleted: false },
                 include: {
-                    // openingHour: true,
                     headquarters: true,
                     theSportCenterCourt: {
                         ...(query.fromPrice && query.toPrice ? {
@@ -122,13 +128,21 @@ export class SportsCenterService {
                             }
                         } : {}),
                         include: {
-                            category: true
+                            category: true,
+                            amenities: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            },
+                            comments: true
+
                         }
                     },
                     theSportsCenterImages: true
                 } 
             });
-
+    
             listSportsCenter = allCenters
             .map(center => {
                 const distance = this.calcDistance(query.latitude, query.longtitude, center.latitude, center.longtitude);
@@ -137,7 +151,7 @@ export class SportsCenterService {
             .filter(center => (center.distance <= 5 && center.theSportCenterCourt.length > 0)).slice(skip, skip + items_per_page); 
             count = listSportsCenter.length;
         } else {
-                
+                              
         const searchCondition: any = query.search ? {
             name: {
                 contains: query.search,
@@ -164,8 +178,17 @@ export class SportsCenterService {
                 },
                 include: {
                     headquarters: true,
-                    openingHour: true,
-                    theSportCenterCourt: true,
+                    theSportCenterCourt: {
+                        include: {
+                            comments: true,
+                            amenities: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
+                        }
+                    },
                     theSportsCenterImages: true
                 }
             });
@@ -186,7 +209,27 @@ export class SportsCenterService {
                 }
             });
         }
-        
+    
+        let totalComments = 0;
+        let totalStars = 0;
+    
+        listSportsCenter.forEach(center => {
+            let centerStars = 0;
+            let centerCommentsCount = 0;
+    
+            center.theSportCenterCourt.forEach(court => {
+                court.comments.forEach(comment => {
+                    starCounts[comment.star]++;
+                    centerStars += comment.star;
+                    centerCommentsCount++;
+                    totalComments++;
+                    totalStars += comment.star;
+                });
+            });
+    
+            center.averageStars = centerCommentsCount ? centerStars / centerCommentsCount : 0;
+            center.totalComments = centerCommentsCount;
+        });
     
         const lastPage = Math.ceil(count / items_per_page);
         const previousPage = page - 1 < 1 ? null : page - 1;
@@ -198,7 +241,139 @@ export class SportsCenterService {
             lastPage,
             previousPage,
             nextPage,
-            total: count
+            total: count,
+            totalComments,
+        };
+    }
+    
+    async getAllSportsCenterByViews(query: SportsCenterFilterDto): Promise<any> {
+        const starCounts = {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0
+        };
+
+        const listSportsCenter = await this.prisma.theSportsCenter.findMany({
+            where: {
+                isDeleted: false
+            },
+            include: {
+                theSportCenterCourt: {
+                    include: {
+                        comments: {
+                            select: {
+                                id: true,
+                                star: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: {
+                view: 'desc'
+            }
+        });
+        
+        const result = listSportsCenter.map(center => {
+            const distance = this.calcDistance(query.latitude, query.longtitude, center.latitude, center.longtitude);
+                
+            let totalStars = 0;
+            let totalComments = 0;
+
+            center.theSportCenterCourt.forEach(court => {
+                court.comments.forEach(comment => {
+                    starCounts[comment.star]++;
+                    totalStars += comment.star;
+                    totalComments++;
+                });
+            });
+
+            const averageStars = totalComments > 0 ? totalStars / totalComments : 0;
+            return {
+                ...center,
+                distance,
+                averageStars
+            }
+        }).filter(center => center.distance <= 5 && center.theSportCenterCourt.length > 0)
+        return {
+            data: result.map(e => ({
+                id: e.id,
+                name: e.id,
+                address: e.address,
+                status: e.status,
+                isDeleted: e.isDeleted,
+                latitude: e.latitude,
+                longtitude: e.longtitude,
+                distance: e.distance,
+                averageStars: e.averageStars
+            })),
+            total: result.length
+        };
+    }
+
+    async getAllSportsCenterByStars(query: SportsCenterFilterDto): Promise<any> {
+        const starCounts = {
+            1: 0,
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0
+        };
+    
+        const listSportsCenter = await this.prisma.theSportsCenter.findMany({
+            where: {
+                isDeleted: false
+            },
+            include: {
+                theSportCenterCourt: {
+                    include: {
+                        comments: true
+                    }
+                }
+            }
+        });
+    
+        const result = listSportsCenter
+            .map(center => {
+                const distance = this.calcDistance(query.latitude, query.longtitude, center.latitude, center.longtitude);
+    
+                let totalStars = 0;
+                let totalComments = 0;
+    
+                center.theSportCenterCourt.forEach(court => {
+                    court.comments.forEach(comment => {
+                        starCounts[comment.star]++;
+                        totalStars += comment.star;
+                        totalComments++;
+                    });
+                });
+    
+                const averageStars = totalComments > 0 ? totalStars / totalComments : 0;
+    
+                return { 
+                    ...center, 
+                    distance, 
+                    averageStars 
+                }; 
+            })
+            .filter(center => center.distance <= 5 && center.theSportCenterCourt.length > 0)
+            .sort((a, b) => a.averageStars - b.averageStars).reverse(); 
+    
+        return {
+            data: result.map(e => ({
+                id: e.id,
+                name: e.id,
+                address: e.address,
+                status: e.status,
+                isDeleted: e.isDeleted,
+                latitude: e.latitude,
+                longtitude: e.longtitude,
+                distance: e.distance,
+                averageStars: e.averageStars
+            })),
+            total: result.length
         };
     }
     

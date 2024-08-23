@@ -1,9 +1,11 @@
-import { BadRequestException, Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpException, HttpStatus, Param, Patch, Post, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Response } from 'express';
 import { CategoryDto } from './dto/category.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CategoryService } from './category.service';
 import { CategoryUpdateData } from './dto/update/data-update.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { AdminGuard } from 'src/auth/auth.admin.guard';
 
 
 @Controller('category')
@@ -13,6 +15,7 @@ export class CategoryController {
     ) {}
 
     @Post('')
+    @UseGuards(AuthGuard, AdminGuard)
     @UseInterceptors(FileInterceptor('file'))
     async createCategory (
         @Res() res: Response,
@@ -57,6 +60,7 @@ export class CategoryController {
     } 
 
     @Get(':id')
+    @UseGuards(AuthGuard, AdminGuard)
     async getCategoryById (
         @Res() res: Response,
         @Param('id') id: string
@@ -77,6 +81,7 @@ export class CategoryController {
     } 
 
     @Patch(':id')
+    @UseGuards(AuthGuard, AdminGuard)
     @UseInterceptors(FileInterceptor('file'))
     async updateCategoryById(
         @Body() categoryData: CategoryUpdateData,
@@ -99,6 +104,7 @@ export class CategoryController {
     }
 
     @Patch('delete/:id')
+    @UseGuards(AuthGuard, AdminGuard)
     async deleteCategoryById(
         @Param('id') id: string,
         @Res() res: Response

@@ -1,9 +1,11 @@
-import { BadRequestException, Body, Controller, Get, HttpStatus, Param, Patch, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpStatus, Param, Patch, Post, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { CourtDto } from './dto/court.dto';
 import { Response } from 'express';
 import { CourtService } from './court.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { courtDataUpdate } from './dto/update/data-update';
+import { AdminGuard } from 'src/auth/auth.admin.guard';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('court')
 export class CourtController {
@@ -12,6 +14,7 @@ export class CourtController {
     ) {}
 
     @Post('')
+    @UseGuards(AuthGuard, AdminGuard)
     @UseInterceptors(FileInterceptor('file'))
     async createCourt (
         @Body() courtDto: CourtDto,
