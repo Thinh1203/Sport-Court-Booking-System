@@ -12,14 +12,13 @@ export class UserController {
         private readonly userService: UserService
     ) {}
 
-   @Get()
+   @Get('')
    @UseGuards(AuthGuard, AdminGuard)
    async getAllUser (@Res() res: Response, @Query() query: UserFilterDto) : Promise<any> {
     try {
         const data = await this.userService.getAllUser(query);
         return res.status(HttpStatus.OK).json({
             statusCode: HttpStatus.OK,
-            message: 'Successfully',
             data
         })
     } catch (error) {
@@ -41,7 +40,6 @@ export class UserController {
         const data = await this.userService.getUserByToken(Number(user.id));
         return res.status(HttpStatus.OK).json({
             statusCode: HttpStatus.OK,
-            message: 'User detail: ',
             data
         })
     } catch (error) {
@@ -59,7 +57,6 @@ export class UserController {
         const data = await this.userService.getUserById(Number(id));
         return res.status(HttpStatus.OK).json({
             statusCode: HttpStatus.OK,
-            message: 'User detail: ',
             data
         })
     } catch (error) {

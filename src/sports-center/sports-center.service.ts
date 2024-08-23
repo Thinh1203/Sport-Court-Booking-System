@@ -269,7 +269,9 @@ export class SportsCenterService {
                             }
                         }
                     }
-                }
+                },
+                theSportsCenterImages: true,
+                openingHour: true
             },
             orderBy: {
                 view: 'desc'
@@ -300,14 +302,16 @@ export class SportsCenterService {
         return {
             data: result.map(e => ({
                 id: e.id,
-                name: e.id,
+                name: e.name,
                 address: e.address,
                 status: e.status,
                 isDeleted: e.isDeleted,
                 latitude: e.latitude,
                 longtitude: e.longtitude,
                 distance: e.distance,
-                averageStars: e.averageStars
+                averageStars: e.averageStars,
+                images: e.theSportsCenterImages,
+                // openingHours: e.openingHour
             })),
             total: result.length
         };
@@ -331,7 +335,9 @@ export class SportsCenterService {
                     include: {
                         comments: true
                     }
-                }
+                },
+                theSportsCenterImages: true,
+                openingHour: true
             }
         });
     
@@ -364,20 +370,21 @@ export class SportsCenterService {
         return {
             data: result.map(e => ({
                 id: e.id,
-                name: e.id,
+                name: e.name,
                 address: e.address,
                 status: e.status,
                 isDeleted: e.isDeleted,
                 latitude: e.latitude,
                 longtitude: e.longtitude,
                 distance: e.distance,
-                averageStars: e.averageStars
+                averageStars: e.averageStars,
+                images: e.theSportsCenterImages,
+                // openingHours: e.openingHour
             })),
             total: result.length
         };
     }
     
-
     async getOneById (id: number, query: FilterByCommentDto): Promise<any> {        
         const existingSportsCenter = await this.prisma.theSportsCenter.findFirst({
             where: {id},
@@ -399,10 +406,11 @@ export class SportsCenterService {
                                     }
                                 }
                             }
-                        }
+                        },
+                        amenities: true
                     }
-                }
-
+                },
+                theSportsCenterImages: true
             }
         });
         if (!existingSportsCenter) {
@@ -416,7 +424,7 @@ export class SportsCenterService {
             4: 0,
             5: 0
         };
-        const nowDate = new Date();
+        // const nowDate = new Date();
         const userCommentCounts = new Map<number, number>();
         let total: number = 0;
         let numberOfStart: number = 0;
@@ -432,15 +440,18 @@ export class SportsCenterService {
                     userCommentCounts.set(userId, 0);
                 }
                 userCommentCounts.set(userId, userCommentCounts.get(userId) + 1);
+                
             });
         });
         for (let i in starCounts) {
             numberOfStart += Number(i) * starCounts[i];
         }
-        let averageStart = numberOfStart > 0 ? numberOfStart / total : 0;
+        let averageStar = numberOfStart > 0 ? numberOfStart / total : 0;
         
+        let commentList: any;
         if (query.createdAt !== undefined || query.isImage !== undefined || query.isYou !== undefined) {
-            const filterConditions: any = {
+    
+            const sportCenterListByQuery = await this.prisma.theSportsCenter.findFirst({
                 where: {
                     id
                 },
@@ -450,7 +461,7 @@ export class SportsCenterService {
                             comments: { 
                                 ...(query.createdAt ? {
                                     orderBy: {
-                                        createdAt: "asc"
+                                        createdAt: "desc"
                                     }
                                 } : {}),
                                 ...(query.isImage ? {
@@ -469,28 +480,80 @@ export class SportsCenterService {
                                             name: true,
                                         }
                                     },
-                                    user: {
-                                        select: {
-                                            fullName: true,
-                                            avatar: true,
-                                            id: true
-                                        }
-                                    }
+                                    user: true
                                 }
-                            }
-                        }
-                    }
+                            },
+                            amenities: true
+                        },
+                    },
+                    theSportsCenterImages: true
                 }
-            };
-    
-            const result = await this.prisma.theSportsCenter.findFirst(filterConditions);
-            return {
-                result,
-                starCounts,
-                averageStart,
-                total
-            }
+            });    
+            
+            commentList = sportCenterListByQuery.theSportCenterCourt.flatMap(court =>
+                court.comments.map(comment => ({
+                    id: comment.id,
+                    star: comment.star,
+                    text: comment.text,
+                    image: comment.imageUrl,
+                    commentImageCloudinaryId: comment.commentImageCloudinaryId,
+                    createdAt: comment.createdAt,
+                    court: comment.court.name,
+                    user: comment.user,
+                    commentCount: userCommentCounts.get(comment.user.id) || 0
+                }))
+            );
+
+            
+        const result = {
+            id: existingSportsCenter.id,
+            name: existingSportsCenter.name,
+            address: existingSportsCenter.address,
+            status: existingSportsCenter.status,
+            view: existingSportsCenter.view,
+            isDeleted: existingSportsCenter.isDeleted,
+            latitude: existingSportsCenter.latitude,
+            longtitude: existingSportsCenter.longtitude,
+            images: existingSportsCenter.theSportsCenterImages,
+            theSportCenterCourt: existingSportsCenter.theSportCenterCourt.map(e => {  
+                return {
+                id: e.id,
+                name: e.name,
+                price: e.price,
+                discount: e.discount,
+                isDeleted: e.isDeleted,
+                imageUrl: e.imageUrl,
+                time: e.time,
+                amenities: e.amenities,
+                courtCloudinaryId: e.courtCloudinaryId,
+                isVip: e.isVip,
+                attributes: e.attributes,
+                flagTime: e.flagTime,
+                maximumTime: e.maximumTime,
+            }}),
+            starCounts,
+                averageStar,
+                total,
+                commentList
         }
+            return result;
+        }
+
+        commentList = existingSportsCenter.theSportCenterCourt.flatMap(court =>
+            court.comments.map(comment => ({
+                id: comment.id,
+                star: comment.star,
+                text: comment.text,
+                image: comment.imageUrl,
+                commentImageCloudinaryId: comment.commentImageCloudinaryId,
+                createdAt: comment.createdAt,
+                court: comment.court.name,
+                user: comment.user.fullName,
+                userId: comment.user.id,
+                avatar: comment.user.avatar,
+                commentCount: userCommentCounts.get(comment.user.id) || 0
+            }))
+        );
      
         const result = {
             id: existingSportsCenter.id,
@@ -501,6 +564,7 @@ export class SportsCenterService {
             isDeleted: existingSportsCenter.isDeleted,
             latitude: existingSportsCenter.latitude,
             longtitude: existingSportsCenter.longtitude,
+            images: existingSportsCenter.theSportsCenterImages,
             theSportCenterCourt: existingSportsCenter.theSportCenterCourt.map(e => {  
                 return {
                 id: e.id,
@@ -515,29 +579,31 @@ export class SportsCenterService {
                 attributes: e.attributes,
                 flagTime: e.flagTime,
                 maximumTime: e.maximumTime,
-                comment: e.comments.map(comment => {
-                    const timeDiff = nowDate.getTime() - new Date(comment.createdAt).getTime();
-                    const timeInHours = Math.floor(timeDiff / (1000 * 60 * 60));
-                    const timeInMinutes = Math.floor(timeDiff / (1000 * 60));
-                    return {
-                    id: comment.id,
-                    star: comment.star,
-                    text: comment.text,
-                    image: comment.imageUrl,
-                    commentImageCloudinaryId: comment.commentImageCloudinaryId,
-                    timeInHours: timeInHours,
-                    timeInMinutes: timeInMinutes,
-                    createdAt: comment.createdAt,
-                    court: comment.court.name,
-                    user: comment.user.fullName,
-                    userId: comment.user.id,
-                    avatar: comment.user.avatar,
-                    commentCount: userCommentCounts.get(comment.user.id) || 0
-                }}),
+                amenities: e.amenities
+                // comment: e.comments.map(comment => {
+                    // const timeDiff = nowDate.getTime() - new Date(comment.createdAt).getTime();
+                    // const timeInHours = Math.floor(timeDiff / (1000 * 60 * 60));
+                    // const timeInMinutes = Math.floor(timeDiff / (1000 * 60));
+                    // return {
+                    // id: comment.id,
+                    // star: comment.star,
+                    // text: comment.text,
+                    // image: comment.imageUrl,
+                    // commentImageCloudinaryId: comment.commentImageCloudinaryId,
+                    // timeInHours: timeInHours,
+                    // timeInMinutes: timeInMinutes,
+                //     createdAt: comment.createdAt,
+                //     court: comment.court.name,
+                //     user: comment.user.fullName,
+                //     userId: comment.user.id,
+                //     avatar: comment.user.avatar,
+                //     commentCount: userCommentCounts.get(comment.user.id) || 0
+                // }}),
             }}),
             starCounts,
-            averageStart,
-            total
+            averageStar,
+            total,
+            commentList
         }
         return result;
     }

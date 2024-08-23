@@ -11,7 +11,7 @@ import { AppotapayModule } from 'src/appotapay/appotapay.module';
   imports: [
     PrismaModule,
     JwtModule,
-    AppotapayModule
+    forwardRef(() => AppotapayModule)
   ],
   exports: [BookingService]
 })
