@@ -4,7 +4,9 @@ import { Response } from 'express';
 import { CommentDto } from './dto/comment.dto';
 import { CommentService } from './comment.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('comment')
 @Controller('comment')
 export class CommentController {
     constructor (
@@ -13,20 +15,21 @@ export class CommentController {
 
     @Post('')
     @UseGuards(AuthGuard)
+    @ApiResponse({status: 201, description: 'Added comment successfully'})
+    @ApiResponse({status: 404, description: 'User not found'})
+    @ApiResponse({status: 400, description: 'Error'})
     @UseInterceptors(FileInterceptor('file'))
     async createComment (
         @Res() res: Response,
         @Body() commentDto: CommentDto,
         @UploadedFile() file: Express.Multer.File,
         @Req() req: Request
-    ): Promise<any> {
+    ) {
         try {
             const user = req['user'];
-            
             const data = await this.commentService.createComment(commentDto, file || null, Number(user.id));
             return res.status(HttpStatus.CREATED).json({
                 statusCode: HttpStatus.CREATED,
-                message: 'Comment successfully',
                 data
             });
         } catch (error) {

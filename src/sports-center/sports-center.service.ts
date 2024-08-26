@@ -112,7 +112,7 @@ export class SportsCenterService {
             4: 0,
             5: 0
         };
-    
+        
         if (query.latitude !== undefined && query.longtitude !== undefined) {            
             const allCenters = await this.prisma.theSportsCenter.findMany({ 
                 where: { isDeleted: false },
@@ -146,9 +146,11 @@ export class SportsCenterService {
             listSportsCenter = allCenters
             .map(center => {
                 const distance = this.calcDistance(query.latitude, query.longtitude, center.latitude, center.longtitude);
+    
                 return { ...center, distance }; 
             })
-            .filter(center => (center.distance <= 5 && center.theSportCenterCourt.length > 0)).slice(skip, skip + items_per_page); 
+            .filter(center => (center.distance <= 5)).slice(skip, skip + items_per_page); 
+            
             count = listSportsCenter.length;
         } else {
                               
@@ -407,7 +409,8 @@ export class SportsCenterService {
                                 }
                             }
                         },
-                        amenities: true
+                        amenities: true,
+                        courtImages: true
                     }
                 },
                 theSportsCenterImages: true
@@ -483,7 +486,8 @@ export class SportsCenterService {
                                     user: true
                                 }
                             },
-                            amenities: true
+                            amenities: true,
+                            courtImages: true
                         },
                     },
                     theSportsCenterImages: true
@@ -522,10 +526,10 @@ export class SportsCenterService {
                 price: e.price,
                 discount: e.discount,
                 isDeleted: e.isDeleted,
-                imageUrl: e.imageUrl,
+                // imageUrl: e.imageUrl,
                 time: e.time,
                 amenities: e.amenities,
-                courtCloudinaryId: e.courtCloudinaryId,
+                // courtCloudinaryId: e.courtCloudinaryId,
                 isVip: e.isVip,
                 attributes: e.attributes,
                 flagTime: e.flagTime,
@@ -572,9 +576,9 @@ export class SportsCenterService {
                 price: e.price,
                 discount: e.discount,
                 isDeleted: e.isDeleted,
-                imageUrl: e.imageUrl,
+                // imageUrl: e.imageUrl,
                 time: e.time,
-                courtCloudinaryId: e.courtCloudinaryId,
+                // courtCloudinaryId: e.courtCloudinaryId,
                 isVip: e.isVip,
                 attributes: e.attributes,
                 flagTime: e.flagTime,

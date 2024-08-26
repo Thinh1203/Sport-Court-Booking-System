@@ -167,8 +167,8 @@ model Booking {
   statusBooking String
   totalPrice  Float
   notes String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   courtId Int
   court Court @relation(fields: [courtId], references: [id])
   billId Int

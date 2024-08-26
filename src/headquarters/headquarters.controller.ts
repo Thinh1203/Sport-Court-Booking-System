@@ -1,23 +1,30 @@
-import { BadRequestException, Body, Controller, Get, HttpStatus, Param, Patch, Post, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpStatus, Param, Patch, Post, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { HeadquartersDto } from './dto/headquarters.dto';
 import { HeadquartersService } from './headquarters.service';
 import { headquartersDataUpdate } from './dto/update/data-update.dto';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AdminGuard } from 'src/auth/auth.admin.guard';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+@ApiTags('headquarter')
 @Controller('headquarters')
 export class HeadquartersController {
     constructor (
         private readonly headquartersService: HeadquartersService
     ) {}
-
     @Post('')
+    @UseGuards(AuthGuard, AdminGuard)
+    @ApiResponse({status: 201, description: 'Added successfully'})
+    @ApiResponse({status: 409, description: 'Headquarter already exists'})
+    @ApiResponse({status: 400, description: 'Error'})
     @UseInterceptors(FileInterceptor('file'))
     async createHeadquarters (
         @Res() res: Response,
         @Body() dataDto: HeadquartersDto,
         @UploadedFile() file: Express.Multer.File
-    ): Promise<any> {
+    ) {
         try {
             if (!file) {
                 throw new BadRequestException('File is required.');
@@ -25,7 +32,6 @@ export class HeadquartersController {
             const data = await this.headquartersService.createHeadquarters(dataDto, file);
             return res.status(HttpStatus.CREATED).json({
                 statusCode: HttpStatus.CREATED,
-                message: 'The headquarters added successfully',
                 data
             });
         } catch (error) {
@@ -37,14 +43,15 @@ export class HeadquartersController {
     }
 
     @Get('')
+    @ApiResponse({status: 200, description: 'Get all headquarters successfully'})
+    @ApiResponse({status: 400, description: 'Error'})
     async getAllHeadquarters (
         @Res() res: Response
-    ): Promise<any> {
+    ) {
         try {
             const data = await this.headquartersService.getAll();
             return res.status(HttpStatus.OK).json({
                 statusCode: HttpStatus.OK,
-                message: 'List of headquarters: ',
                 data
             });
         } catch (error) {
@@ -56,15 +63,17 @@ export class HeadquartersController {
     } 
 
     @Get(':id')
+    @ApiResponse({status: 200, description: 'Get headquarters by id successfully'})
+    @ApiResponse({status: 404, description: 'Headquarter not found'})
+    @ApiResponse({status: 400, description: 'Error'})
     async getHeadquartersById (
         @Res() res: Response,
         @Param('id') id: string
-    ): Promise<any> {
+    ) {
         try {
             const data = await this.headquartersService.getOneById(Number(id));
             return res.status(HttpStatus.OK).json({
                 statusCode: HttpStatus.OK,
-                message: 'The headquarters detail: ',
                 data
             });
         } catch (error) {
@@ -76,13 +85,17 @@ export class HeadquartersController {
     } 
 
     @Patch(':id')
+    @UseGuards(AuthGuard, AdminGuard)
+    @ApiResponse({status: 200, description: 'Updated headquarters successfully'})
+    @ApiResponse({status: 404, description: 'Headquarter not found'})
+    @ApiResponse({status: 400, description: 'Error'})
     @UseInterceptors(FileInterceptor('file'))
     async updateCategoryById(
         @Body() headquartersData: headquartersDataUpdate,
         @UploadedFile() file: Express.Multer.File,
         @Param('id') id: string,
         @Res() res: Response
-    ): Promise<any> {
+    ) {
         try {
             await this.headquartersService.updateById(Number(id), headquartersData, file || null);
             return res.status(HttpStatus.OK).json({

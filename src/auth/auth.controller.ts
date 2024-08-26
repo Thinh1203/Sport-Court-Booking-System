@@ -5,6 +5,9 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from './auth.guard';
 import { UpdatePasswordByEmail } from './dto/update-password.dto';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
     constructor (
@@ -12,13 +15,15 @@ export class AuthController {
     ) {}
 
     @Post('register')
-    @UsePipes(ValidationPipe)
-    async register (@Body() registerUserDto: RegisterUserDto, @Res() res: Response): Promise<any> {
+    // @UsePipes(ValidationPipe)
+    @ApiResponse({status: 201, description: 'Register successfully'})
+    @ApiResponse({status: 409, description: 'User already exists'})
+    @ApiResponse({status: 400, description: 'Error'})
+    async register (@Body() registerUserDto: RegisterUserDto, @Res() res: Response) {
         try {
             const newUser = await this.authService.register(registerUserDto);              
             return res.status(HttpStatus.CREATED).json({
                 statusCode: HttpStatus.CREATED,
-                message: 'User registered successfully',
                 data: newUser
             });
         } catch (error) {
@@ -30,13 +35,15 @@ export class AuthController {
     }
 
     @Post('login')
-    @UsePipes(ValidationPipe)
-    async login (@Body() loginUserDto: LoginUserDto, @Res() res: Response): Promise<any> {
+    @ApiResponse({status: 200, description: 'Login successfully'})
+    @ApiResponse({status: 401, description: 'User or Password incorrect'})
+    @ApiResponse({status: 400, description: 'Error'})
+    // @UsePipes(ValidationPipe)
+    async login (@Body() loginUserDto: LoginUserDto, @Res() res: Response) {
         try {
             const token = await this.authService.login(loginUserDto);
             return res.status(HttpStatus.OK).json({
                 statusCode: HttpStatus.OK,
-                message: 'Login successfully',
                 data: token
             })
         } catch (error) {
@@ -48,12 +55,13 @@ export class AuthController {
     }
 
     @Post('refresh-token')
-    async refreshToken(@Body() {refresh_token}, @Res() res: Response): Promise<any> {
+    @ApiResponse({status: 201, description: 'Created new token successfully'})
+    @ApiResponse({status: 400, description: 'Error'})
+    async refreshToken(@Body() {refresh_token}, @Res() res: Response) {
         try {
             const token = await this.authService.refreshToken(refresh_token);
             return res.status(HttpStatus.CREATED).json({
                 statusCode: HttpStatus.CREATED,
-                message: 'New access_token',
                 data: token
             })
         } catch (error) {
@@ -65,12 +73,14 @@ export class AuthController {
     }
 
     @Post('forgot-password')
-    async forgotPassword(@Body() { email }, @Res() res: Response): Promise<any> {
+    @ApiResponse({status: 201, description: 'Created token successfully'})
+    @ApiResponse({status: 404, description: 'User not found'})
+    @ApiResponse({status: 400, description: 'Error'})
+    async forgotPassword(@Body() { email }, @Res() res: Response) {
         try {
             const otp = await this.authService.generateOTP(email);
             return res.status(HttpStatus.CREATED).json({
                 statusCode: HttpStatus.CREATED,
-                message: 'OTP',
                 otp
             })
         } catch (error) {
@@ -82,12 +92,14 @@ export class AuthController {
     }
 
     @Post('verify-otp')
-    async verifyOTP(@Body() { email, otp }, @Res() res: Response): Promise<any> {
+    @ApiResponse({status: 200, description: 'OTP correct'})
+    @ApiResponse({status: 401, description: 'OTP incorrect'})
+    @ApiResponse({status: 400, description: 'Error'})
+    async verifyOTP(@Body() { email, otp }, @Res() res: Response) {
         try {
             await this.authService.verifyOTP(email, otp);
             return res.status(HttpStatus.OK).json({
                 statusCode: HttpStatus.OK,
-                message: 'Valid OTP',
             })
         } catch (error) {
             return res.status(HttpStatus.BAD_REQUEST).json({
@@ -99,7 +111,10 @@ export class AuthController {
 
     
     @Patch('update-password')
-    async updatePassword(@Body() data: UpdatePasswordByEmail, @Res() res: Response): Promise<any> {
+    @ApiResponse({status: 200, description: 'Password updated successfully'})
+    @ApiResponse({status: 404, description: 'User not found'})
+    @ApiResponse({status: 400, description: 'Error'})
+    async updatePassword(@Body() data: UpdatePasswordByEmail, @Res() res: Response) {
         try {
             await this.authService.updateNewPassword(data);
             return res.status(HttpStatus.OK).json({

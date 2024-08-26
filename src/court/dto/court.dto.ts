@@ -1,30 +1,36 @@
-import { IsArray, IsDecimal, IsNotEmpty, Min } from "class-validator";
+import { IsArray, IsNotEmpty, IsNumber, Min, ArrayMinSize, IsOptional, IsString } from 'class-validator';
 
 export class CourtDto { 
     @IsNotEmpty()
+    // @IsString()
     name: string;
 
     @IsNotEmpty()
-    @IsDecimal({ force_decimal: true, decimal_digits: '2'})
-    @Min(0)
+    // @IsNumber()
+    // @Min(0)
     price: number;
-
+    
     @IsNotEmpty()
-    @Min(1)
+    // @IsNumber()
+    // @Min(0)
     sportsCenterId: number;
-
+    
     @IsNotEmpty()
-    @Min(30)
+    // @IsNumber()
+    // @Min(0)
     time: number;
-
+    
     @IsNotEmpty()
     // @IsArray()
-    amenitiesIds: string;
-
+    // @ArrayMinSize(1)
+    // @IsNumber({}, { each: true })
+    amenitiesIds: number[];
+    
     @IsNotEmpty()
-    @Min(1)
+    // @IsNumber()
+    // @Min(0)
     categoryId: number;
 
-    @IsNotEmpty()
+    // @IsString()
     attributes?: string;
-}   
+}
