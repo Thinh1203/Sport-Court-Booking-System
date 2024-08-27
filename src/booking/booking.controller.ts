@@ -4,7 +4,8 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { ListBooking } from './dto/booking.dto';
 import { BookingService } from './booking.service';
 import { BookingFilterDto } from './dto/booking-filter.dto';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { createBookingApiBody } from './swagger';
 
 @ApiTags('booking')
 @Controller('booking')
@@ -18,6 +19,8 @@ export class BookingController {
     @ApiResponse({status: 201, description: 'Create booking successfully'})
     @ApiResponse({status: 404, description: 'User or court not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @ApiBearerAuth()
+    @createBookingApiBody
     async createBooking (
         @Body() bookingDto: ListBooking,
         @Res() res: Response,
@@ -45,6 +48,7 @@ export class BookingController {
     @ApiResponse({status: 200, description: 'Get my history booking successfully'})
     @ApiResponse({status: 404, description: 'User not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @ApiBearerAuth()
     async getBookingByUserId(
         @Res() res: Response,
         @Req() req: Response
@@ -67,6 +71,34 @@ export class BookingController {
     @Get('')
     @ApiResponse({status: 200, description: 'Get all booking successfully'})
     @ApiResponse({status: 400, description: 'Error'})
+    @ApiQuery({
+        name: 'search',
+        required: false,
+        type: String,
+        description: 'Search term to filter bookings by phone number or full name',
+        example: 'John Doe'
+    })
+    @ApiQuery({
+        name: 'paymentStatus',
+        required: false,
+        enum: ['PENDING', 'SUCCESS', 'CANCELLED'],
+        description: 'Filter bookings by payment status',
+        example: 'SUCCESS'
+    })
+    @ApiQuery({
+        name: 'items_per_page',
+        required: false,
+        type: Number,
+        description: 'Number of items per page',
+        example: 10
+    })
+    @ApiQuery({
+        name: 'page',
+        required: false,
+        type: Number,
+        description: 'Current page number',
+        example: 1
+    })
     async getAllBooking(
         @Query() query: BookingFilterDto,
         @Res() res: Response
@@ -90,6 +122,7 @@ export class BookingController {
     @ApiResponse({status: 200, description: 'Get booking by id successfully'})
     @ApiResponse({status: 404, description: 'Booking not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @ApiBearerAuth()
     async getBookingById(
         @Param('id') id: string,
         @Res() res: Response

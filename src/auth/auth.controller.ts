@@ -6,6 +6,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from './auth.guard';
 import { UpdatePasswordByEmail } from './dto/update-password.dto';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { forgotPasswordApi, loginUserApi, refreshTokenApi, registerUserApi, updateNewPasswordApi, verifyOTPApi } from './swagger';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -19,6 +20,7 @@ export class AuthController {
     @ApiResponse({status: 201, description: 'Register successfully'})
     @ApiResponse({status: 409, description: 'User already exists'})
     @ApiResponse({status: 400, description: 'Error'})
+    @registerUserApi
     async register (@Body() registerUserDto: RegisterUserDto, @Res() res: Response) {
         try {
             const newUser = await this.authService.register(registerUserDto);              
@@ -38,6 +40,7 @@ export class AuthController {
     @ApiResponse({status: 200, description: 'Login successfully'})
     @ApiResponse({status: 401, description: 'User or Password incorrect'})
     @ApiResponse({status: 400, description: 'Error'})
+    @loginUserApi
     // @UsePipes(ValidationPipe)
     async login (@Body() loginUserDto: LoginUserDto, @Res() res: Response) {
         try {
@@ -57,6 +60,7 @@ export class AuthController {
     @Post('refresh-token')
     @ApiResponse({status: 201, description: 'Created new token successfully'})
     @ApiResponse({status: 400, description: 'Error'})
+    @refreshTokenApi
     async refreshToken(@Body() {refresh_token}, @Res() res: Response) {
         try {
             const token = await this.authService.refreshToken(refresh_token);
@@ -76,6 +80,7 @@ export class AuthController {
     @ApiResponse({status: 201, description: 'Created token successfully'})
     @ApiResponse({status: 404, description: 'User not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @forgotPasswordApi
     async forgotPassword(@Body() { email }, @Res() res: Response) {
         try {
             const otp = await this.authService.generateOTP(email);
@@ -95,6 +100,7 @@ export class AuthController {
     @ApiResponse({status: 200, description: 'OTP correct'})
     @ApiResponse({status: 401, description: 'OTP incorrect'})
     @ApiResponse({status: 400, description: 'Error'})
+    @verifyOTPApi
     async verifyOTP(@Body() { email, otp }, @Res() res: Response) {
         try {
             await this.authService.verifyOTP(email, otp);
@@ -114,6 +120,7 @@ export class AuthController {
     @ApiResponse({status: 200, description: 'Password updated successfully'})
     @ApiResponse({status: 404, description: 'User not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @updateNewPasswordApi
     async updatePassword(@Body() data: UpdatePasswordByEmail, @Res() res: Response) {
         try {
             await this.authService.updateNewPassword(data);

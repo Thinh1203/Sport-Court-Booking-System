@@ -7,7 +7,8 @@ import { courtDataUpdate } from './dto/update/data-update';
 import { AdminGuard } from 'src/auth/auth.admin.guard';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ParseCourtDtoPipe } from './pipe-validation/parseCourtDtoPipe';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { createCourtApiBody, updateCourtApiBody } from './swagger';
 
 @ApiTags('court')
 @Controller('court')
@@ -21,6 +22,9 @@ export class CourtController {
     @ApiResponse({status: 201, description: 'Created court successfully'})
     @ApiResponse({status: 404, description: 'Category or Sport center not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @createCourtApiBody
+    @ApiConsumes('multipart/form-data')
+    @ApiBearerAuth()
     @UseInterceptors(FilesInterceptor('files', 5))
     async createNewCourt (
         @Body(new ParseCourtDtoPipe()) courtDto: CourtDto,
@@ -47,6 +51,7 @@ export class CourtController {
     @Get('')
     @ApiResponse({status: 200, description: 'Get all court successfully'})
     @ApiResponse({status: 400, description: 'Error'})
+    @UseGuards(AuthGuard, AdminGuard)
     async getAll (@Res() res: Response){
         try {
             const data = await this.courtService.getAll();
@@ -88,6 +93,8 @@ export class CourtController {
     @ApiResponse({status: 200, description: 'Updated court successfully'})
     @ApiResponse({status: 404, description: 'Court not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @ApiConsumes('multipart/form-data')
+    @updateCourtApiBody
     @UseInterceptors(FilesInterceptor('files', 5))
     async updateOneById (
         @Param('id') id: string,

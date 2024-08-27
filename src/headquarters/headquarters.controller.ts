@@ -4,9 +4,10 @@ import { Response } from 'express';
 import { HeadquartersDto } from './dto/headquarters.dto';
 import { HeadquartersService } from './headquarters.service';
 import { headquartersDataUpdate } from './dto/update/data-update.dto';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from 'src/auth/auth.admin.guard';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { createHeadquartersApiBody, updateHeadquartersApiBody } from './swagger';
 
 @ApiTags('headquarter')
 @Controller('headquarters')
@@ -14,11 +15,15 @@ export class HeadquartersController {
     constructor (
         private readonly headquartersService: HeadquartersService
     ) {}
+
     @Post('')
     @UseGuards(AuthGuard, AdminGuard)
     @ApiResponse({status: 201, description: 'Added successfully'})
     @ApiResponse({status: 409, description: 'Headquarter already exists'})
     @ApiResponse({status: 400, description: 'Error'})
+    @createHeadquartersApiBody
+    @ApiBearerAuth()
+    @ApiConsumes ('multipart/form-data')
     @UseInterceptors(FileInterceptor('file'))
     async createHeadquarters (
         @Res() res: Response,
@@ -89,6 +94,9 @@ export class HeadquartersController {
     @ApiResponse({status: 200, description: 'Updated headquarters successfully'})
     @ApiResponse({status: 404, description: 'Headquarter not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @updateHeadquartersApiBody
+    @ApiConsumes('multipart/form-data')
+    @ApiBearerAuth()
     @UseInterceptors(FileInterceptor('file'))
     async updateCategoryById(
         @Body() headquartersData: headquartersDataUpdate,

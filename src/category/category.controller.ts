@@ -6,7 +6,8 @@ import { CategoryService } from './category.service';
 import { CategoryUpdateData } from './dto/update/data-update.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AdminGuard } from 'src/auth/auth.admin.guard';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { createCategoryApiBody, updateCategoryApiBody } from './swagger';
 
 @ApiTags('category')
 @Controller('category')
@@ -20,6 +21,9 @@ export class CategoryController {
     @ApiResponse({status: 201, description: 'Created category successfully'})
     @ApiResponse({status: 409, description: 'Category already exists'})
     @ApiResponse({status: 400, description: 'Error'})
+    @createCategoryApiBody
+    @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file'))
     async createCategory (
         @Res() res: Response,
@@ -91,6 +95,9 @@ export class CategoryController {
     @ApiResponse({status: 200, description: 'Updated category successfully'})
     @ApiResponse({status: 404, description: 'Category not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @updateCategoryApiBody
+    @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file'))
     async updateCategoryById(
         @Body() categoryData: CategoryUpdateData,
@@ -117,6 +124,8 @@ export class CategoryController {
     @ApiResponse({status: 200, description: 'Deleted category successfully'})
     @ApiResponse({status: 404, description: 'Category not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @ApiConsumes('multipart/form-data')
+    @ApiBearerAuth()
     async deleteCategoryById(
         @Param('id') id: string,
         @Res() res: Response

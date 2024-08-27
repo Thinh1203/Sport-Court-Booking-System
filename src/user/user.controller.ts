@@ -6,7 +6,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UserFilterDto } from './dto/user-filter.dto';
 import { AdminGuard } from 'src/auth/auth.admin.guard';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { updateUserApi, uploadUserImageFileApi } from './swagger';
 
 @ApiTags('user')
 @Controller('user')
@@ -17,8 +18,30 @@ export class UserController {
 
    @Get('')
    @UseGuards(AuthGuard, AdminGuard)
+   @ApiBearerAuth()
    @ApiResponse({status: 200, description: 'Get all users successfully'})
    @ApiResponse({status: 400, description: 'Error'})
+   @ApiQuery({ 
+        name: 'items_per_page', 
+        required: false, 
+        type: Number, 
+        description: 'Number of items per page',
+        example: 10 
+    })
+    @ApiQuery({ 
+        name: 'page', 
+        required: false, 
+        type: Number, 
+        description: 'Page number', 
+        example: 1 
+    })
+    @ApiQuery({ 
+        name: 'search', 
+        required: false, 
+        type: String, 
+        description: 'Search keyword to filter users by full name',
+        example: 'John' 
+    })
    async getAllUser (
         @Res() res: Response, 
         @Query() query: UserFilterDto
@@ -42,6 +65,7 @@ export class UserController {
    @ApiResponse({status: 200, description: 'Get my information successfully'})
    @ApiResponse({status: 404, description: 'User not found'})
    @ApiResponse({status: 400, description: 'Error'})
+   @ApiBearerAuth()
    async getUserByToken(
         @Res() res: Response,
         @Req() req: Request
@@ -62,11 +86,11 @@ export class UserController {
    }
 
    @Get(':id')
-   @UseGuards(AuthGuard)
-   @UseGuards(AuthGuard)
+   @UseGuards(AuthGuard, AdminGuard)
    @ApiResponse({status: 200, description: 'Get user by id successfully'})
    @ApiResponse({status: 404, description: 'User not found'})
    @ApiResponse({status: 400, description: 'Error'})
+   @ApiBearerAuth()
    async getUserById(
         @Param('id') id: string,
         @Res() res: Response
@@ -90,6 +114,7 @@ export class UserController {
    @ApiResponse({status: 200, description: 'Updated user successfully'})
    @ApiResponse({status: 404, description: 'User not found'})
    @ApiResponse({status: 400, description: 'Error'})
+   @updateUserApi
    async updateUserById(
         @Param('id') id: string, 
         @Body() UpdateUserDto: UpdateUserDto, 
@@ -114,6 +139,7 @@ export class UserController {
    @ApiResponse({status: 200, description: 'Deleted user successfully'})
    @ApiResponse({status: 404, description: 'User not found'})
    @ApiResponse({status: 400, description: 'Error'})
+   @ApiBearerAuth()
    async deleteUserById(
         @Param('id') id: string, 
         @Res() res: Response
@@ -137,6 +163,9 @@ export class UserController {
    @ApiResponse({status: 200, description: 'Updated avatar successfully'})
    @ApiResponse({status: 404, description: 'User not found'})
    @ApiResponse({status: 400, description: 'Error'})
+   @ApiBearerAuth()
+   @uploadUserImageFileApi
+   @ApiConsumes('multipart/form-data')
    @UseInterceptors(FileInterceptor('file'))
    async uploadAvatarById(
         @Param('id') id: string,
@@ -158,10 +187,13 @@ export class UserController {
     }
 
    @Patch('uploadBackground/:id')
+   @UseGuards(AuthGuard)
    @ApiResponse({status: 200, description: 'Updated background successfully'})
    @ApiResponse({status: 404, description: 'User not found'})
    @ApiResponse({status: 400, description: 'Error'})
-   @UseGuards(AuthGuard)
+   @ApiBearerAuth()
+   @uploadUserImageFileApi
+   @ApiConsumes('multipart/form-data')
    @UseInterceptors(FileInterceptor('file'))
    async uploadBackgroundById(
     @Param('id') id: string,

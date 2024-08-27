@@ -4,7 +4,8 @@ import { Response } from 'express';
 import { CommentDto } from './dto/comment.dto';
 import { CommentService } from './comment.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { createCommentApiBody } from './swagger';
 
 @ApiTags('comment')
 @Controller('comment')
@@ -18,6 +19,9 @@ export class CommentController {
     @ApiResponse({status: 201, description: 'Added comment successfully'})
     @ApiResponse({status: 404, description: 'User not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @createCommentApiBody
+    @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file'))
     async createComment (
         @Res() res: Response,

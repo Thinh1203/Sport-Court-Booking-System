@@ -4,9 +4,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { AmenityService } from './amenity.service';
 import { AmenityDto } from './dto/amenity.dto';
 import { AmenityData } from './dto/data-update';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AdminGuard } from 'src/auth/auth.admin.guard';
+import { createAmenityApiBody, updateAmenityApiBody } from './swagger';
 
 @ApiTags('amenity')
 @Controller('amenity')
@@ -17,10 +18,13 @@ export class AmenityController {
     
     @Post('')
     @UseGuards(AuthGuard, AdminGuard)
+    @ApiBearerAuth()
     @ApiResponse({status: 201, description: 'Added item successfully'})
     @ApiResponse({status: 409, description: 'Item already exists'})
     @ApiResponse({status: 400, description: 'Error'})
+    @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file'))
+    @createAmenityApiBody  
     async createAmenity (
         @Body() amenity: AmenityDto,
         @UploadedFile() file: Express.Multer.File,
@@ -44,7 +48,6 @@ export class AmenityController {
     }
 
     @Get('')
-    @UseGuards(AuthGuard, AdminGuard)
     @ApiResponse({status: 200, description: 'Get all item successfully'})
     @ApiResponse({status: 400, description: 'Error'})
     async getAll (
@@ -87,9 +90,13 @@ export class AmenityController {
     }
 
     @Patch(':id')
+    @UseGuards(AuthGuard, AdminGuard)
+    @ApiBearerAuth()
+    @updateAmenityApiBody
     @ApiResponse({status: 200, description: 'Updated item successfully'})
     @ApiResponse({status: 404, description: 'Item not found'})
     @ApiResponse({status: 400, description: 'Error'})
+    @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file'))
     async updateOneById (
         @Body() amenityData: AmenityData,
@@ -112,6 +119,8 @@ export class AmenityController {
     }
 
     @Delete(':id')
+    @UseGuards(AuthGuard, AdminGuard)
+    @ApiBearerAuth()
     @ApiResponse({status: 200, description: 'Deleted item successfully'})
     @ApiResponse({status: 404, description: 'Item not found'})
     @ApiResponse({status: 400, description: 'Error'})
