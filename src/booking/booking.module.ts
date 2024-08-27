@@ -4,6 +4,7 @@ import { BookingService } from './booking.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AppotapayModule } from 'src/appotapay/appotapay.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   controllers: [BookingController],
@@ -11,6 +12,7 @@ import { AppotapayModule } from 'src/appotapay/appotapay.module';
   imports: [
     PrismaModule,
     JwtModule,
+    AuthModule,
     forwardRef(() => AppotapayModule)
   ],
   exports: [BookingService]

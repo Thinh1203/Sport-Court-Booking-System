@@ -71,7 +71,7 @@ export class UserService {
         });
 
         if (!userDetail) {
-            throw new HttpException('User not found', HttpStatus.BAD_REQUEST)
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         }
         return {
             id: userDetail.id,
@@ -127,7 +127,7 @@ export class UserService {
             }
         });
         if (!existingUser) {
-            throw new HttpException('User not found', HttpStatus.BAD_REQUEST)
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         } 
         let newRole: any = existingUser.role;
 
@@ -163,7 +163,7 @@ export class UserService {
             }
         });
         if (!existingUser) {
-            throw new HttpException('User not found', HttpStatus.BAD_REQUEST)
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         } 
         return await this.prisma.user.update({
             where: {
@@ -182,7 +182,7 @@ export class UserService {
             }
         });
         if (!existingUser) {    
-            throw new HttpException('User not found', HttpStatus.BAD_REQUEST)
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         }
         if (existingUser.avatar !== null && existingUser.avatar.length > 0) {
             await this.cloudinaryService.deleteFile(existingUser.avatarCloudinaryId);
@@ -207,7 +207,7 @@ export class UserService {
             }
         });
         if (!existingUser) {
-            throw new HttpException('User not found', HttpStatus.BAD_REQUEST)
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND)
         } 
         
         if (existingUser.background !== null && existingUser.background.length > 0) {

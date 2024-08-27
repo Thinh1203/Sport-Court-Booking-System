@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as speakeasy from 'speakeasy';
 import { UpdatePasswordByEmail } from './dto/update-password.dto';
+import { User } from '@prisma/client';
 
 
 @Injectable()
@@ -52,7 +53,7 @@ export class AuthService {
     }
     
 
-    async refreshToken(refresh_token: string): Promise<any> {
+    async refreshToken(refresh_token: string): Promise<string | any> {
         try {
             const verify = await this.jwtService.verifyAsync(refresh_token, {
                 secret: this.configService.get<string>('SECRET_KEY')
@@ -80,7 +81,7 @@ export class AuthService {
         }
     }
 
-    async register (registerUserDto: RegisterUserDto): Promise<any> {
+    async register (registerUserDto: RegisterUserDto): Promise<User | any> {
         const existingUser = await this.prisma.user.findFirst({
             where: {
                 email: registerUserDto.email      
@@ -101,7 +102,7 @@ export class AuthService {
         });
     }
 
-    async login (loginUserDto: LoginUserDto): Promise<any> {
+    async login (loginUserDto: LoginUserDto): Promise<string | any> {
         const existingUser = await this.prisma.user.findFirst({
             where: {
                 AND: [

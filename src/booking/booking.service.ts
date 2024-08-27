@@ -5,6 +5,7 @@ import { AppotapayService } from 'src/appotapay/appotapay.service';
 import * as moment from 'moment-timezone';
 import { BillStatus, BookingStatus } from './dto/booking-status.enum';
 import { BookingFilterDto } from './dto/booking-filter.dto';
+import { Bill, BookingData, BookingDataByUser } from './interfaces/booking-interface';
 
 @Injectable()
 export class BookingService {
@@ -13,11 +14,13 @@ export class BookingService {
         private readonly appotapayService: AppotapayService
     ) {}
 
-    private convertDateTime(dateTime: string): moment.Moment {
+    private convertDateTime(dateTime: string | Date): moment.Moment {
         return moment.tz(dateTime, 'Asia/Ho_Chi_Minh');
     } 
-    async updateBookingBill(data: any): Promise<any> {
+
+    async updateBookingBill(data: any): Promise<string | any> {
        try {
+        
         if (data.transaction.errorCode === 0) {
             const bill = await this.prisma.bill.update({
                 where: {
@@ -27,6 +30,14 @@ export class BookingService {
                     paymentStatus: BillStatus.Success
                 }
             });        
+            await this.prisma.booking.updateMany({
+                where: {
+                    billId: bill.id
+                },
+                data: {
+                    statusBooking: BookingStatus.WaitingActive
+                }
+            });
             
             await this.prisma.billDetail.create({
                 data: {
@@ -88,14 +99,14 @@ export class BookingService {
                 id: true,
                 fullName: true,
                 email: true,
-                phoneNumber: true
+                phoneNumber: true,
+                avatar: true
             }
         });
 
         if (!existingUser) {
             throw new HttpException('User not found', HttpStatus.NOT_FOUND);
         }
-
         const newBill = await this.prisma.bill.create({
             data: {
                 amount: data.amount,
@@ -167,7 +178,7 @@ export class BookingService {
         };
     }
 
-    async getAllBooking(query: BookingFilterDto): Promise<any> {
+    async getAllBooking(query: BookingFilterDto): Promise<Bill | any> {
         const items_per_page = query.items_per_page || 10;
         const page = Number(query.page) || 1;
         const skip = (page - 1) * items_per_page;        
@@ -218,12 +229,12 @@ export class BookingService {
             paymentMethod: bill.paymentMethod,
             paymentStatus: bill.paymentStatus,
             amount: bill.amount,
-            createdAt: bill.createdAt,
-            updatedAt: bill.updatedAt,
+            createdAt: this.convertDateTime(bill.createdAt).format('YYYY-MM-DDTHH:mm:ss'),
+            updatedAt: this.convertDateTime(bill.updatedAt).format('YYYY-MM-DDTHH:mm:ss'),
             bookings: bill.booking.map(booking => ({
                 id: booking.id,
                 startDate: booking.startDate,
-                startTime: booking.startTime,
+                startTime: booking.startTime,   
                 endTime: booking.endTime,
                 playTime: booking.playTime,
                 cancelTime: booking.cancelTime,
@@ -232,8 +243,9 @@ export class BookingService {
                 statusBooking: booking.statusBooking,
                 totalPrice: booking.totalPrice,
                 notes: booking.notes,
-                createdAt: booking.createdAt,
-                updatedAt: booking.updatedAt
+                createdAt: this.convertDateTime(booking.createdAt).format('YYYY-MM-DDTHH:mm:ss'),
+                updatedAt: this.convertDateTime(booking.updatedAt).format('YYYY-MM-DDTHH:mm:ss'),
+                
             })),
             user: {
                 id: bill.user.id,
@@ -252,12 +264,20 @@ export class BookingService {
         }
     }
 
-    async getBookingById(id: number): Promise<any> {
+    async getBookingById(id: number): Promise<BookingData |any> {
         const bill = await this.prisma.bill.findUnique({
             where: {id},
             include: {
-                booking: true,
-                user: true
+                booking: {
+                    include: {
+                        court: {
+                            include: {
+                                courtImages: true
+                            }
+                        }
+                    }
+                },
+                user: true,
             }
         });
 
@@ -270,8 +290,8 @@ export class BookingService {
             paymentMethod: bill.paymentMethod,
             paymentStatus: bill.paymentStatus,
             amount: bill.amount,
-            createdAt: bill.createdAt,
-            updatedAt: bill.updatedAt,
+            createdAt: this.convertDateTime(bill.createdAt).format('YYYY-MM-DDTHH:mm:ss'),
+            updatedAt: this.convertDateTime(bill.updatedAt).format('YYYY-MM-DDTHH:mm:ss'),
             bookings: bill.booking.map(booking => ({
                 id: booking.id,
                 startDate: booking.startDate,
@@ -284,8 +304,16 @@ export class BookingService {
                 statusBooking: booking.statusBooking,
                 totalPrice: booking.totalPrice,
                 notes: booking.notes,
-                createdAt: booking.createdAt,
-                updatedAt: booking.updatedAt
+                createdAt: this.convertDateTime(booking.createdAt).format('YYYY-MM-DDTHH:mm:ss'),
+                updatedAt: this.convertDateTime(booking.updatedAt).format('YYYY-MM-DDTHH:mm:ss'),
+                court: {
+                    id: booking.court.id,
+                    isVip: booking.court.isVip,
+                    images: booking.court.courtImages.map(image => ({
+                        imgageUrl: image.imageUrl,
+                        imageId: image.imageId
+                    }))
+                }
             })),
             user: {
                 id: bill.user.id,
@@ -298,9 +326,9 @@ export class BookingService {
         };
     }
 
-    async getBookingByUserId(userId: number): Promise<any> { 
+    async getBookingByUserId(userId: number): Promise<BookingDataByUser | any> { 
         
-        const bill = await this.prisma.bill.findMany({
+        const bills = await this.prisma.bill.findMany({
             where: {
                 userId
             },
@@ -308,20 +336,46 @@ export class BookingService {
                 booking: {
                     include: {
                         court: {
-                            select: {
-                                id: true,
-                                attributes: true,
-                                isVip: true,
-                                name: true,
-                                time: true,
-                                price: true,
+                            include: {
+                                courtImages: true
                             }
                         }
                     }
                 }
             }
         });
+        const result = bills.map(bill => ({
+            id: bill.id,
+            paymentMethod: bill.paymentMethod,
+            paymentStatus: bill.paymentStatus,
+            amount: bill.amount,
+            createdAt: this.convertDateTime(bill.createdAt).format('YYYY-MM-DDTHH:mm:ss'),
+            updatedAt: this.convertDateTime(bill.updatedAt).format('YYYY-MM-DDTHH:mm:ss'),
+            bookings: bill.booking.map(booking => ({
+                id: booking.id,
+                startDate: booking.startDate,
+                startTime: booking.startTime,
+                endTime: booking.endTime,
+                createdAt: booking.createdAt,
+                updatedAt: booking.updatedAt,
+                playTime: booking.playTime,
+                cancelTime: booking.cancelTime,
+                checkInTime: booking.checkInTime,
+                checkOutTime: booking.checkOutTime,
+                statusBooking: booking.statusBooking,
+                totalPrice: booking.totalPrice,
+                notes: booking.notes,
+                court: {
+                    id: booking.court.id,
+                    isVip: booking.court.isVip,
+                    images: booking.court.courtImages.map(image => ({
+                        imgageUrl: image.imageUrl,
+                        imageId: image.imageId
+                    }))
+                } 
+            }))
 
-        return bill;
+        }));
+        return result;
     }
 }

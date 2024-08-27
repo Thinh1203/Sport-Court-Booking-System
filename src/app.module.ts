@@ -13,7 +13,7 @@ import { HeadquartersModule } from './headquarters/headquarters.module';
 import { CommentModule } from './comment/comment.module';
 import { BookingModule } from './booking/booking.module';
 import { AppotapayModule } from './appotapay/appotapay.module';
-import { APP_PIPE } from '@nestjs/core';
+
 
 
 @Module({
@@ -24,7 +24,7 @@ import { APP_PIPE } from '@nestjs/core';
   ],
   controllers: [AppController],
   providers: [
-    AppService,
+    AppService
   ],
 })
 export class AppModule {}

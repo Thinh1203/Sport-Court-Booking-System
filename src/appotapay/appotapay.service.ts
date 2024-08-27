@@ -72,7 +72,7 @@ export class AppotapayService {
           extraData: "",
         },
         notificationConfig: {
-          notifyUrl: "http://localhost:3030/ipn",
+          notifyUrl: "http://localhost:3030/appotapay/ipn",
           redirectUrl: "http://localhost:3030/appotapay/redirect"
         },
       },
@@ -110,7 +110,7 @@ export class AppotapayService {
       throw new Error(error.response?.data?.message || error.message);
     }
   }
-  
+
   async processingReturnedResult(data: string, signature: string): Promise<string | Object> {
     try {
       const decodeReturnedData = Buffer.from(data, 'base64').toString('utf-8');
