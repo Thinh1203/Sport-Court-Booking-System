@@ -3,7 +3,7 @@ import { CourtDto } from './dto/court.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { courtDataUpdate } from './dto/update/data-update';
-import { Court } from '@prisma/client';
+
 
 @Injectable()
 export class CourtService {
@@ -12,7 +12,7 @@ export class CourtService {
         private readonly cloudinaryService: CloudinaryService
     ) {}
 
-    async createNewCourt(courtDto: CourtDto, files: Express.Multer.File[]): Promise<Court | any> {
+    async createNewCourt(courtDto: CourtDto, files: Express.Multer.File[]): Promise<any> {
 
         const existingCategory = await this.prisma.category.findFirst({
             where: {
