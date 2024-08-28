@@ -37,15 +37,49 @@ export class RegionService {
 
     async getOneById(id: number) {
         const existingRegion = await this.prisma.region.findUnique({
-            where: {id}
+            where: { id },
+            include: {
+                theSportsCenter: {
+                    include: {
+                        theSportsCenterImages: true,
+                        theSportCenterCourt: {
+                            include: {
+                                comments: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
-
+    
         if (!existingRegion) {
             throw new HttpException('Region not found', HttpStatus.NOT_FOUND);
         }
-
+    
+        
+        existingRegion.theSportsCenter = existingRegion.theSportsCenter.map(sportsCenter => {
+            let totalComments = 0;
+            let totalStars = 0;
+    
+            sportsCenter.theSportCenterCourt.forEach(court => {
+                totalComments += court.comments.length;
+                totalStars += court.comments.reduce((sum, comment) => sum + comment.star, 0);
+            });
+    
+            const averageStars = totalComments > 0 ? totalStars / totalComments : 0;
+    
+            
+            return {
+                ...sportsCenter,
+                averageStars,
+                totalComments,
+            };
+        });
+    
         return existingRegion;
     }
+    
+    
 
     async updateOneById(id: number, data: UpdateRegionData) {
         const existingRegion = await this.prisma.region.findUnique({
