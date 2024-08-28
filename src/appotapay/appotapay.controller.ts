@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Post, Query, Res } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query, Res } from '@nestjs/common';
 import { AppotapayService } from './appotapay.service';
 import { Response } from 'express';
 
@@ -7,6 +7,7 @@ export class AppotapayController {
     constructor(
         private readonly appotaPayService: AppotapayService
     ) {}
+
 
     @Get('redirect')
     async paymentResult(

@@ -16,7 +16,7 @@ export class AuthController {
     ) {}
 
     @Post('register')
-    // @UsePipes(ValidationPipe)
+    @UsePipes(ValidationPipe)
     @ApiResponse({status: 201, description: 'Register successfully'})
     @ApiResponse({status: 409, description: 'User already exists'})
     @ApiResponse({status: 400, description: 'Error'})

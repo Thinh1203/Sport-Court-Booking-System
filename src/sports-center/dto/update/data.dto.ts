@@ -6,4 +6,5 @@ export class SportsCenterDataDto {
     latitude?: number;
     longtitude?: number;
     isDeleted?: boolean;
+    regionId?: number;
 }

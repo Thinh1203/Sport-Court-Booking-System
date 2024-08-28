@@ -5,7 +5,7 @@ import { Response } from 'express';
 import { SportsCenterService } from './sports-center.service';
 import { FilterByCommentDto, SportsCenterFilterDto } from './dto/sports-center.filter.dto';
 import { SportsCenterDataDto } from './dto/update/data.dto';
-import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AdminGuard } from 'src/auth/auth.admin.guard';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { createSportsCenterApiBody } from './swagger';
@@ -24,6 +24,7 @@ export class SportsCenterController {
     @ApiResponse({status: 400, description: 'Error'})
     @createSportsCenterApiBody
     @ApiBearerAuth()
+    @ApiConsumes('multipart/form-data')
     @UseInterceptors(FilesInterceptor('files', 5))
     async createSportsCenter (
         @UploadedFiles() files: Express.Multer.File[],
@@ -51,7 +52,7 @@ export class SportsCenterController {
     @Get('')
     @ApiResponse({status: 200, description: 'Get all sport center successfully'})
     @ApiResponse({status: 400, description: 'Error'})
-    @ApiQuery({ name: 'page', required: false, type: String, description: 'Page number for pagination' })
+    @ApiQuery({ name: 'page', required: false, type: String, description: 'Page number for pagination'})
     @ApiQuery({ name: 'items_per_page', required: false, type: Number, description: 'Number of items per page for pagination' })
     @ApiQuery({ name: 'search', required: false, type: String, description: 'Search keyword for sports center name' })
     @ApiQuery({ name: 'isBlocked', required: false, type: Boolean, description: 'Filter by blocked status' })

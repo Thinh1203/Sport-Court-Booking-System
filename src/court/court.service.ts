@@ -128,7 +128,12 @@ export class CourtService {
                     category: true, 
                     amenities: true,
                     booking: true,
-                    courtImages: true
+                    courtImages: true,
+                    sportsCenter: {
+                        include: {
+                            openingHour: true
+                        }
+                    }
                 }
             },
     );  
