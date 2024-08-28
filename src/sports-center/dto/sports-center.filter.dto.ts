@@ -8,7 +8,7 @@ export class SportsCenterFilterDto {
     categoryId?: number;
     fromPrice?: number;
     toPrice?: number;
-    amenitiesIds?: number[];
+    amenitiesIds?: number[] | string;
 }
 
 export class FilterByCommentDto {

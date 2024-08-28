@@ -13,6 +13,7 @@ import { HeadquartersModule } from './headquarters/headquarters.module';
 import { CommentModule } from './comment/comment.module';
 import { BookingModule } from './booking/booking.module';
 import { AppotapayModule } from './appotapay/appotapay.module';
+import { RegionModule } from './region/region.module';
 
 
 
@@ -20,7 +21,7 @@ import { AppotapayModule } from './appotapay/appotapay.module';
   imports: [   
     ConfigModule.forRoot({isGlobal: true}),
     UserModule, AuthModule, CloudinaryModule, SportsCenterModule, CategoryModule, AmenityModule, CourtModule, HeadquartersModule, 
-    CommentModule, BookingModule, AppotapayModule,
+    CommentModule, BookingModule, AppotapayModule, RegionModule,
   ],
   controllers: [AppController],
   providers: [

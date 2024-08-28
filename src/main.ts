@@ -25,7 +25,8 @@ async function bootstrap() {
       .addTag('booking')
       .addTag('court')
       .addTag('headquarter')
-      .addTag('sport-center')
+      .addTag('sport-center').
+      addTag('region')
       .addBearerAuth()
       .build();
   const document = SwaggerModule.createDocument(app, config);

@@ -7,7 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as speakeasy from 'speakeasy';
 import { UpdatePasswordByEmail } from './dto/update-password.dto';
-import { User } from '@prisma/client';
+
 
 
 @Injectable()
@@ -35,7 +35,7 @@ export class AuthService {
         return newPassword;
     }
 
-    private async generateToken (payload: { id: number, email: string, phoneNumber: string, role: string }) : Promise<string | any> {
+    private async generateToken (payload: { id: number, email: string, phoneNumber: string, role: string }): Promise<{ access_token: string, refresh_token: string }> {
         
         const access_token = await this.jwtService.signAsync(payload, {
             secret: this.configService.get<string>('SECRET_KEY'),
@@ -53,7 +53,7 @@ export class AuthService {
     }
     
 
-    async refreshToken(refresh_token: string): Promise<string | any> {
+    async refreshToken(refresh_token: string): Promise<string> {
         try {
             const verify = await this.jwtService.verifyAsync(refresh_token, {
                 secret: this.configService.get<string>('SECRET_KEY')
@@ -81,7 +81,7 @@ export class AuthService {
         }
     }
 
-    async register (registerUserDto: RegisterUserDto): Promise<User | any> {
+    async register (registerUserDto: RegisterUserDto): Promise<{ access_token: string, refresh_token: string }>  {
         const existingUser = await this.prisma.user.findFirst({
             where: {
                 email: registerUserDto.email      
@@ -92,7 +92,7 @@ export class AuthService {
         }
         const newPassword: string = await this.hashPassword(registerUserDto.password);
         
-        return await this.prisma.user.create({
+        const newUser = await this.prisma.user.create({
             data: {
                 email: registerUserDto.email,
                 phoneNumber: registerUserDto.phoneNumber,
@@ -100,9 +100,11 @@ export class AuthService {
                 password: newPassword
             }
         });
+        const payload = { id: newUser.id, email: newUser.email, phoneNumber: newUser.phoneNumber, role: newUser.role };
+        return await this.generateToken(payload);
     }
 
-    async login (loginUserDto: LoginUserDto): Promise<string | any> {
+    async login (loginUserDto: LoginUserDto): Promise<{ access_token: string, refresh_token: string }>  {
         const existingUser = await this.prisma.user.findFirst({
             where: {
                 AND: [
@@ -168,7 +170,7 @@ export class AuthService {
         return true;
     }
 
-    async updateNewPassword(data: UpdatePasswordByEmail): Promise<any> {
+    async updateNewPassword(data: UpdatePasswordByEmail) {
         const existingUser = await this.prisma.user.findFirst({
             where: {
                 email: data.email

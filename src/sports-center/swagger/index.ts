@@ -33,21 +33,18 @@ export const createSportsCenterApiBody = ApiBody({
                         dayOfWeek: {
                             type: 'number',
                             example: 1,
-                            description: 'Day of the week (0 for Sunday, 6 for Saturday)',
                         },
                         openingTime: {
                             type: 'string',
-                            example: '08:00',
-                            description: 'Opening time in HH:mm format',
+                            example: '08:00'
                         },
                         closingTime: {
                             type: 'string',
-                            example: '22:00',
-                            description: 'Closing time in HH:mm format',
+                            example: '22:00'
                         },
                     },
                 },
-                description: 'Array of opening hours for the sports center',
+                description: 'Array of opening hours for the sports center. Day of the week (0 for Sunday, 6 for Saturday)',
             },
             files: {
                 type: 'array',

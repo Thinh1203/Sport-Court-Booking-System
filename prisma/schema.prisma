@@ -53,6 +53,14 @@ model Headquarters {
   theSportsCenter TheSportsCenter[]
 }
 
+model Region {
+  id           Int    @id @default(autoincrement())
+  name String
+  type  String
+  countryCode String
+  theSportsCenter TheSportsCenter[]
+}
+
 model TheSportsCenter {
   id           Int    @id @default(autoincrement())
   name         String 
@@ -62,11 +70,14 @@ model TheSportsCenter {
   isDeleted     Boolean @default(false)
   latitude      Float
   longtitude    Float
+  timeRange Int?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   theSportsCenterImages TheSportsCenterImages[]
   openingHour   OpeningHour[] 
   theSportCenterCourt Court[]
+  regionId Int?
+  region  Region? @relation(fields: [regionId], references: [id])
   headquartersId Int?
   headquarters Headquarters? @relation(fields: [headquartersId], references: [id])
 }
@@ -96,7 +107,7 @@ model Comment {
 
 model OpeningHour {
   id           Int    @id @default(autoincrement())
-  dayOfWeek    Int       
+  dayOfWeek    String        
   openingTime  String
   closingTime  String
   sportsCenterId Int
