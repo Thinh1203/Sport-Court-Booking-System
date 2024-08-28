@@ -8,8 +8,6 @@ import { ConfigService } from '@nestjs/config';
 import * as speakeasy from 'speakeasy';
 import { UpdatePasswordByEmail } from './dto/update-password.dto';
 
-
-
 @Injectable()
 export class AuthService {
     constructor (
