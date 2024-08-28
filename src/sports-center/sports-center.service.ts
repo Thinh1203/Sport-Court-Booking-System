@@ -118,6 +118,7 @@ export class SportsCenterService {
         return newSportsCenter;
     }
 
+    
     async getAllSportsCenter(query: SportsCenterFilterDto): Promise<any> {
         const itemsPerPage = query.items_per_page || 10;
         const page = Number(query.page) || 1;
@@ -129,6 +130,8 @@ export class SportsCenterService {
                 ? query.amenitiesIds.map(Number)
                 : [Number(query.amenitiesIds)]
             : [];
+        const fromPrice = query.fromPrice ? Number(query.fromPrice) : undefined;
+        const toPrice = query.toPrice ? Number(query.toPrice) : undefined;
     
         const conditions: any = {
             isDeleted: false,
@@ -140,8 +143,8 @@ export class SportsCenterService {
                 mode: 'insensitive',
             };
         }
-        let regions: any[];
-        if (categoryId || (amenitiesIds.length > 0) || (query.fromPrice && query.toPrice)) {
+    
+        if (categoryId || amenitiesIds.length > 0 || fromPrice !== undefined || toPrice !== undefined) {
             conditions.theSportCenterCourt = {
                 some: {
                     ...(categoryId && { categoryId }),
@@ -154,10 +157,10 @@ export class SportsCenterService {
                             },
                         },
                     }),
-                    ...(categoryId && query.fromPrice && query.toPrice && {
+                    ...(fromPrice !== undefined && toPrice !== undefined && {
                         price: {
-                            gte: Number(query.fromPrice),
-                            lte: Number(query.toPrice),
+                            gte: fromPrice,
+                            lte: toPrice,
                         },
                     }),
                 },
@@ -165,6 +168,7 @@ export class SportsCenterService {
         }
     
         let listSportsCenter: any[];
+    
         if (query.latitude !== undefined && query.longtitude !== undefined) {
             const allCenters = await this.prisma.theSportsCenter.findMany({
                 where: { isDeleted: false },
@@ -198,18 +202,7 @@ export class SportsCenterService {
                 })
                 .filter((center) => center.distance <= 5)
                 .slice(skip, skip + itemsPerPage);
-    
         } else {
-            if (query.search) {
-                regions = await this.prisma.region.findMany({
-                    where: {
-                        name: {
-                            contains: query.search,
-                            mode: 'insensitive'
-                        }
-                    },
-                });
-            }
             listSportsCenter = await this.prisma.theSportsCenter.findMany({
                 take: itemsPerPage,
                 skip,
@@ -275,7 +268,14 @@ export class SportsCenterService {
         return {
             data: {
                 sports: listSportsCenter,
-                regions
+                regions: query.search ? await this.prisma.region.findMany({
+                    where: {
+                        name: {
+                            contains: query.search,
+                            mode: 'insensitive'
+                        }
+                    }
+                }) : [],
             },
             currentPage: page,
             lastPage,
