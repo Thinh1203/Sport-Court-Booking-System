@@ -140,7 +140,7 @@ export class SportsCenterService {
                 mode: 'insensitive',
             };
         }
-    
+        let regions: any[];
         if (categoryId || (amenitiesIds.length > 0) || (query.fromPrice && query.toPrice)) {
             conditions.theSportCenterCourt = {
                 some: {
@@ -200,6 +200,16 @@ export class SportsCenterService {
                 .slice(skip, skip + itemsPerPage);
     
         } else {
+            if (query.search) {
+                regions = await this.prisma.region.findMany({
+                    where: {
+                        name: {
+                            contains: query.search,
+                            mode: 'insensitive'
+                        }
+                    },
+                });
+            }
             listSportsCenter = await this.prisma.theSportsCenter.findMany({
                 take: itemsPerPage,
                 skip,
@@ -265,6 +275,7 @@ export class SportsCenterService {
         return {
             data: {
                 sports: listSportsCenter,
+                regions
             },
             currentPage: page,
             lastPage,
