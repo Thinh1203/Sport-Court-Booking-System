@@ -1,4 +1,4 @@
 interface TimeLineBooking {
     timeRange: string;
-    isBusy: boolean;
+    freeTime: boolean;
 }

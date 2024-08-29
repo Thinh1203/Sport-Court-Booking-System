@@ -149,16 +149,14 @@ export class CourtService {
         },
       },
     });
+
     if (!existingCourt) {
       throw new HttpException('Court not found', HttpStatus.NOT_FOUND);
     }
+
     const now = moment().format('dddd');
-    const day = now.slice(0, 3).toLocaleLowerCase();
+    const day = now.slice(0, 3).toLowerCase();
     const timeLineBooking: TimeLineBooking[] = [];
-    const busyTime: string[] = [];
-    existingCourt.booking.map((e) =>
-      busyTime.push(`${e.startTime} - ${e.endTime}`),
-    );
 
     existingCourt.sportsCenter.openingHour.forEach((element) => {
       if (element.dayOfWeek === day) {
@@ -173,8 +171,8 @@ export class CourtService {
             break;
           }
           timeLineBooking.push({
-            timeRange: `${currentTime.format('H:mm')} - ${nextTime.format('H:mm')}`,
-            isBusy: false,
+            timeRange: currentTime.format('H:mm'),
+            freeTime: false,
           });
           currentTime = nextTime;
         }
@@ -182,9 +180,24 @@ export class CourtService {
     });
 
     const listOfTimeBooking = timeLineBooking.map((slot) => {
-      if (busyTime.includes(slot.timeRange)) {
-        slot.isBusy = true;
-      }
+      const slotStartTime = moment(slot.timeRange, 'H:mm');
+      const slotEndTime = slotStartTime.clone().add(60, 'minutes');
+
+      const isBusy = existingCourt.booking.some((booking) => {
+        const bookingStartTime = moment(booking.startTime, 'H:mm');
+        const bookingEndTime = moment(booking.endTime, 'H:mm');
+
+        return (
+          (slotStartTime.isSameOrAfter(bookingStartTime) &&
+            slotStartTime.isBefore(bookingEndTime)) ||
+          (slotEndTime.isAfter(bookingStartTime) &&
+            slotEndTime.isSameOrBefore(bookingEndTime)) ||
+          (slotStartTime.isBefore(bookingStartTime) &&
+            slotEndTime.isAfter(bookingEndTime))
+        );
+      });
+
+      slot.freeTime = isBusy;
       return slot;
     });
 

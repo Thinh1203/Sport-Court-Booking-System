@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { AmenityDto } from './dto/amenity.dto';
 import { AmenityData } from './dto/data-update';
+import { AmenityInterFace } from './interfaces';
 
 @Injectable()
 export class AmenityService {
@@ -14,7 +15,7 @@ export class AmenityService {
   async createAmenity(
     amenityDto: AmenityDto,
     file: Express.Multer.File,
-  ): Promise<any> {
+  ): Promise<AmenityInterFace> {
     const existingItem = await this.prisma.amentity.findFirst({
       where: {
         name: {
@@ -37,11 +38,11 @@ export class AmenityService {
     });
   }
 
-  async getAll(): Promise<any> {
+  async getAll(): Promise<AmenityInterFace[]> {
     return await this.prisma.amentity.findMany();
   }
 
-  async getOneById(id: number): Promise<any> {
+  async getOneById(id: number): Promise<AmenityInterFace> {
     const existingItem = await this.prisma.amentity.findFirst({
       where: {
         id,
@@ -57,7 +58,7 @@ export class AmenityService {
     id: number,
     amenityData: AmenityData,
     file: Express.Multer.File | null,
-  ): Promise<any> {
+  ): Promise<AmenityInterFace>{
     const existingItem = await this.prisma.amentity.findFirst({
       where: {
         id,
@@ -94,7 +95,7 @@ export class AmenityService {
     });
   }
 
-  async deleteById(id: number): Promise<any> {
+  async deleteById(id: number): Promise<AmenityInterFace> {
     const existingItem = await this.prisma.amentity.findFirst({
       where: {
         id,

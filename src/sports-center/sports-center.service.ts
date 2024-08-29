@@ -119,7 +119,7 @@ export class SportsCenterService {
   }
 
   async getAllSportsCenter(query: SportsCenterFilterDto): Promise<any> {
-    const itemsPerPage = query.items_per_page || 10;
+    const itemsPerPage = Number(query.items_per_page) || 10;
     const page = Number(query.page) || 1;
     const skip = (page - 1) * itemsPerPage;
 
