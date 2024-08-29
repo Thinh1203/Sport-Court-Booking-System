@@ -15,17 +15,23 @@ import { BookingModule } from './booking/booking.module';
 import { AppotapayModule } from './appotapay/appotapay.module';
 import { RegionModule } from './region/region.module';
 
-
-
 @Module({
-  imports: [   
-    ConfigModule.forRoot({isGlobal: true}),
-    UserModule, AuthModule, CloudinaryModule, SportsCenterModule, CategoryModule, AmenityModule, CourtModule, HeadquartersModule, 
-    CommentModule, BookingModule, AppotapayModule, RegionModule,
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    UserModule,
+    AuthModule,
+    CloudinaryModule,
+    SportsCenterModule,
+    CategoryModule,
+    AmenityModule,
+    CourtModule,
+    HeadquartersModule,
+    CommentModule,
+    BookingModule,
+    AppotapayModule,
+    RegionModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

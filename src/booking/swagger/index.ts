@@ -11,8 +11,8 @@ export const createBookingApiBody = ApiBody({
                     type: 'object',
                     properties: {
                         startDate: { type: 'string', example: '2024-08-15' },
-                        startTime: { type: 'string', example: '15:00:00' },
-                        endTime: { type: 'string', example: '16:00:00' },
+                        startTime: { type: 'string', example: '15:00' },
+                        endTime: { type: 'string', example: '16:00' },
                         totalPrice: { type: 'number', example: 50000 },
                         courtId: { type: 'number', example: 1 }
                     },
@@ -21,8 +21,8 @@ export const createBookingApiBody = ApiBody({
                 example: [
                     {
                         startDate: '2024-08-27',
-                        startTime: '2024-08-27 08:00:00',
-                        endTime: '2024-08-27 09:00:00',
+                        startTime: '08:00',
+                        endTime: '09:00',
                         totalPrice: 50000,
                         courtId: 1
                     }

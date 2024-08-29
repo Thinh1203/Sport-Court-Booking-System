@@ -3,6 +3,8 @@ import { CourtDto } from './dto/court.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { courtDataUpdate } from './dto/update/data-update';
+import * as moment from 'moment-timezone';
+import { CourtFilter } from './dto/court-filter.dto';
 
 @Injectable()
 export class CourtService {
@@ -121,13 +123,24 @@ export class CourtService {
     return formattedResult;
   }
 
-  async getById(id: number): Promise<any> {
+  async getById(id: number, query: CourtFilter): Promise<any> {
+    let toDay: string = moment().format('YYYY-MM-DD');
+    if (query.date) {
+      toDay = query.date;
+    }
+
     const existingCourt = await this.prisma.court.findFirst({
       where: { id },
       include: {
         category: true,
         amenities: true,
-        booking: true,
+        booking: {
+          where: {
+            startDate: {
+              equals: toDay,
+            },
+          },
+        },
         courtImages: true,
         sportsCenter: {
           include: {
@@ -139,7 +152,46 @@ export class CourtService {
     if (!existingCourt) {
       throw new HttpException('Court not found', HttpStatus.NOT_FOUND);
     }
-    return existingCourt;
+    const now = moment().format('dddd');
+    const day = now.slice(0, 3).toLocaleLowerCase();
+    const timeLineBooking: TimeLineBooking[] = [];
+    const busyTime: string[] = [];
+    existingCourt.booking.map((e) =>
+      busyTime.push(`${e.startTime} - ${e.endTime}`),
+    );
+
+    existingCourt.sportsCenter.openingHour.forEach((element) => {
+      if (element.dayOfWeek === day) {
+        const openingTime = moment(element.openingTime, 'HH:mm');
+        const closingTime = moment(element.closingTime, 'HH:mm');
+
+        let currentTime = openingTime.clone();
+
+        while (currentTime.isBefore(closingTime)) {
+          const nextTime = currentTime.clone().add(60, 'minutes');
+          if (nextTime.isAfter(closingTime)) {
+            break;
+          }
+          timeLineBooking.push({
+            timeRange: `${currentTime.format('H:mm')} - ${nextTime.format('H:mm')}`,
+            isBusy: false,
+          });
+          currentTime = nextTime;
+        }
+      }
+    });
+
+    const listOfTimeBooking = timeLineBooking.map((slot) => {
+      if (busyTime.includes(slot.timeRange)) {
+        slot.isBusy = true;
+      }
+      return slot;
+    });
+
+    return {
+      existingCourt,
+      listOfTimeBooking,
+    };
   }
 
   async updateById(

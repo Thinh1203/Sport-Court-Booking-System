@@ -139,10 +139,10 @@ export class BookingService {
         'YYYY-MM-DD',
       );
       const startTime = this.convertDateTime(element.startTime).format(
-        'YYYY-MM-DDTHH:mm:ss',
+        'HH:mm',
       );
       const endTime = this.convertDateTime(element.endTime).format(
-        'YYYY-MM-DDTHH:mm:ss',
+        'HH:mm',
       );
       const timePlay = this.convertDateTime(element.endTime).diff(
         this.convertDateTime(element.startTime),
@@ -151,7 +151,7 @@ export class BookingService {
       const calculateCancelTime = this.convertDateTime(
         element.startTime,
       ).subtract(30, 'minutes');
-      const timeCancel = calculateCancelTime.format('YYYY-MM-DDTHH:mm:ss');
+      const timeCancel = calculateCancelTime.format('HH:mm');
 
       await this.prisma.booking.create({
         data: {
@@ -201,7 +201,7 @@ export class BookingService {
   }
 
   async getAllBooking(query: BookingFilterDto): Promise<Bill | any> {
-    const items_per_page = query.items_per_page || 10;
+    const items_per_page = Number(query.items_per_page) || 10;
     const page = Number(query.page) || 1;
     const skip = (page - 1) * items_per_page;
 
