@@ -1,12 +1,13 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, ParseIntPipe, Patch, Post, Query, Res, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Response } from 'express';
 import { RegionDto } from './dto/region.dto';
 import { RegionService } from './region.service';
 import { UpdateRegionData } from './dto/update-region.dto';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { createRegionApiBody, updateRegionApiBody } from './swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AdminGuard } from 'src/auth/auth.admin.guard';
+import { FilterRegionDto } from './dto/region-filter.dto';
 
 @ApiTags('region')
 @Controller('region')
@@ -61,12 +62,14 @@ export class RegionController {
 
     
     @Get(':id')
+    @ApiQuery({ name: 'categoryId', required: false, type: Number, description: 'FindMany sports-center by category' })
     async getOneById (
         @Param('id', ParseIntPipe) id: number,
+        @Query() query: FilterRegionDto,
         @Res() res: Response
     ) {
         try {
-            const data = await this.regionService.getOneById(id);
+            const data = await this.regionService.getOneById(id, query);
             return res.status(HttpStatus.OK).json({
                 statusCode: HttpStatus.OK,
                 data
