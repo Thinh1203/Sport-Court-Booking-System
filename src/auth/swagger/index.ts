@@ -68,12 +68,8 @@ export const forgotPasswordApi = ApiBody({
                 type: 'string',
                 example: 'nguyenvana@gmail.com'
             },
-            password: {
-                type: 'string',
-                example: '1234567'
-            }
         },
-        required: ['email', 'password'],
+        required: ['email'],
     }
 });
 
