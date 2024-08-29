@@ -100,7 +100,7 @@ export class BookingService {
     }
   }
 
-  async createdBooking(data: ListBooking, userId: number): Promise<any> {
+  async createdBooking(data: ListBooking, userId: number) {
     const existingUser = await this.prisma.user.findFirst({
       where: { id: userId },
       select: {
@@ -138,12 +138,8 @@ export class BookingService {
       const startDate = this.convertDateTime(element.startDate).format(
         'YYYY-MM-DD',
       );
-      const startTime = this.convertDateTime(element.startTime).format(
-        'HH:mm',
-      );
-      const endTime = this.convertDateTime(element.endTime).format(
-        'HH:mm',
-      );
+      const startTime = this.convertDateTime(element.startTime).format('HH:mm');
+      const endTime = this.convertDateTime(element.endTime).format('HH:mm');
       const timePlay = this.convertDateTime(element.endTime).diff(
         this.convertDateTime(element.startTime),
         'minutes',

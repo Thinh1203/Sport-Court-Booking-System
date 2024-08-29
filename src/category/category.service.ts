@@ -3,6 +3,7 @@ import { CategoryDto } from './dto/category.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { CategoryUpdateData } from './dto/update/data-update.dto';
+import { CategoryInterface } from './interfaces';
 
 @Injectable()
 export class CategoryService {
@@ -14,7 +15,7 @@ export class CategoryService {
   async createCategory(
     categoryDto: CategoryDto,
     file: Express.Multer.File,
-  ): Promise<any> {
+  ): Promise<CategoryInterface> {
     const existingCategory = await this.prisma.category.findFirst({
       where: {
         type: categoryDto.type,
@@ -38,7 +39,7 @@ export class CategoryService {
     });
   }
 
-  async getAllCategory(): Promise<any> {
+  async getAllCategory(): Promise<CategoryInterface[]> {
     return await this.prisma.category.findMany({
       where: {
         isDeleted: false,
@@ -46,7 +47,7 @@ export class CategoryService {
     });
   }
 
-  async getCategoryById(id: number): Promise<any> {
+  async getCategoryById(id: number): Promise<CategoryInterface> {
     const existingCategory = await this.prisma.category.findFirst({
       where: { id },
     });
@@ -60,7 +61,7 @@ export class CategoryService {
     id: number,
     categoryData: CategoryUpdateData,
     file: Express.Multer.File | null,
-  ): Promise<any> {
+  ): Promise<CategoryInterface> {
     const existingCategory = await this.prisma.category.findFirst({
       where: {
         id,
@@ -105,7 +106,7 @@ export class CategoryService {
     });
   }
 
-  async deleteCategoryById(id: number): Promise<any> {
+  async deleteCategoryById(id: number): Promise<CategoryInterface>{
     const existingCategory = await this.prisma.category.findFirst({
       where: {
         id,

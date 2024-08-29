@@ -35,7 +35,7 @@ export class AuthService {
       to,
       subject,
       text,
-      html: text
+      html: text,
     });
     return result;
   }
@@ -178,7 +178,7 @@ export class AuthService {
     return await this.generateToken(payload);
   }
 
-  async generateOTP(email: string): Promise<any> {
+  async generateOTP(email: string): Promise<string> {
     const existingUser = await this.prisma.user.findFirst({
       where: {
         email,
@@ -198,8 +198,8 @@ export class AuthService {
     this.saveOTPToMemory(existingUser.email, otp);
     const subject = 'Refresh Password';
     const html = `<p>OTP code to update new password: <b>${otp}</b></p>`;
-    const result = await this.sendEmail(existingUser.email, subject, html);
-    return result;
+    await this.sendEmail(existingUser.email, subject, html);
+    return 'success';
   }
 
   async verifyOTP(email: string, otp: string): Promise<boolean> {
