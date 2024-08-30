@@ -197,7 +197,29 @@ export class CourtService {
         );
       });
 
-      slot.freeTime = isBusy;
+      if (!isBusy) {
+        const isBetweenBookings = existingCourt.booking.some(
+          (booking, index) => {
+            if (index + 1 < existingCourt.booking.length) {
+              const nextBooking = existingCourt.booking[index + 1];
+              const currentEndTime = moment(booking.endTime, 'H:mm');
+              const nextStartTime = moment(nextBooking.startTime, 'H:mm');
+
+              return (
+                slotStartTime.isSameOrAfter(currentEndTime) &&
+                slotEndTime.isSameOrBefore(nextStartTime)
+              );
+            }
+            return false;
+          },
+        );
+
+        if (isBetweenBookings) {
+          slot.freeTime = true;
+        }
+      } else {
+        slot.freeTime = false;
+      }
       return slot;
     });
 

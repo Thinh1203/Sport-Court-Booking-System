@@ -11,6 +11,8 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { CategoryDto } from './dto/category.dto';
@@ -26,6 +28,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { createCategoryApiBody, updateCategoryApiBody } from './swagger';
+import { CouponDto } from 'src/coupon/dto/coupon.dto';
 
 @ApiTags('category')
 @Controller('category')
@@ -33,6 +36,7 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @Post('')
+  @UsePipes(ValidationPipe)
   @UseGuards(AuthGuard, AdminGuard)
   @ApiResponse({ status: 201, description: 'Created category successfully' })
   @ApiResponse({ status: 409, description: 'Category already exists' })
@@ -50,10 +54,12 @@ export class CategoryController {
       if (!file) {
         throw new BadRequestException('File is required.');
       }
-      const data = await this.categoryService.createCategory(categoryDto, file);
+      console.log(CouponDto);
+      
+      // const data = await this.categoryService.createCategory(categoryDto, file);
       return res.status(HttpStatus.CREATED).json({
         statusCode: HttpStatus.CREATED,
-        data,
+        // data,
       });
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({

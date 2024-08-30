@@ -13,24 +13,24 @@ enum Role {
 }
 
 model User {
-  id            Int             @id @default(autoincrement())
-  email         String          
-  password      String
-  phoneNumber   String?
-  fullName      String
-  role          Role            @default(USER)
-  avatar        String?
-  background    String?
-  avatarCloudinaryId String?
+  id                     Int             @id @default(autoincrement())
+  email                  String
+  password               String
+  phoneNumber            String?
+  fullName               String
+  role                   Role            @default(USER)
+  avatar                 String?
+  background             String?
+  avatarCloudinaryId     String?
   backgroundCloudinaryId String?
-  isBlocked     Boolean?        @default(false)
-  googleId      String?
-  facebookId    String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  socialAccount SocialAccount[]
-  bill Bill[]
-  comments Comment[]
+  isBlocked              Boolean?        @default(false)
+  googleId               String?
+  facebookId             String?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  socialAccount          SocialAccount[]
+  bill                   Bill[]
+  comments               Comment[]
 }
 
 model SocialAccount {
@@ -44,179 +44,205 @@ model SocialAccount {
   userId       Int?
   user         User?  @relation(fields: [userId], references: [id])
 }
+
 model Headquarters {
-  id           Int    @id @default(autoincrement())
-  name String
-  description String
-  imageUrl String
+  id                Int               @id @default(autoincrement())
+  name              String
+  description       String
+  imageUrl          String
   imageCloudinaryId String
-  theSportsCenter TheSportsCenter[]
+  theSportsCenter   TheSportsCenter[]
 }
 
 model Region {
-  id           Int    @id @default(autoincrement())
-  name String
-  type  String
-  countryCode String
+  id              Int               @id @default(autoincrement())
+  name            String
+  type            String
+  countryCode     String
   theSportsCenter TheSportsCenter[]
 }
 
 model TheSportsCenter {
-  id           Int    @id @default(autoincrement())
-  name         String 
-  address       String
-  status        Boolean         @default(true)
-  view          Int          @default(0)
-  isDeleted     Boolean @default(false)
-  latitude      Float
-  longtitude    Float
-  timeRange Int?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  address               String
+  status                Boolean                 @default(true)
+  view                  Int                     @default(0)
+  isDeleted             Boolean                 @default(false)
+  latitude              Float
+  longtitude            Float
+  timeRange             Int?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
   theSportsCenterImages TheSportsCenterImages[]
-  openingHour   OpeningHour[] 
-  theSportCenterCourt Court[]
-  regionId Int?
-  region  Region? @relation(fields: [regionId], references: [id])
-  headquartersId Int?
-  headquarters Headquarters? @relation(fields: [headquartersId], references: [id])
+  openingHour           OpeningHour[]
+  theSportCenterCourt   Court[]
+  regionId              Int?
+  region                Region?                 @relation(fields: [regionId], references: [id])
+  headquartersId        Int?
+  headquarters          Headquarters?           @relation(fields: [headquartersId], references: [id])
+  coupons               Coupon[]
 }
 
 model TheSportsCenterImages {
-  id           Int    @id @default(autoincrement())
-  imageUrl     String
+  id                       Int             @id @default(autoincrement())
+  imageUrl                 String
   sportsCenterCloudinaryId String
-  theSportsCenterId Int
-  theSportsCenter TheSportsCenter @relation(fields: [theSportsCenterId], references: [id])
+  theSportsCenterId        Int
+  theSportsCenter          TheSportsCenter @relation(fields: [theSportsCenterId], references: [id])
 }
 
 model Comment {
-  id           Int    @id @default(autoincrement())
-  star  Int 
-  text  String?
-  imageUrl String?
+  id                       Int      @id @default(autoincrement())
+  star                     Int
+  text                     String?
+  imageUrl                 String?
   commentImageCloudinaryId String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  userId Int
-  user  User  @relation(fields: [userId], references: [id])
-  courtId Int
-  court Court @relation(fields: [courtId], references: [id])
-
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  userId                   Int
+  user                     User     @relation(fields: [userId], references: [id])
+  courtId                  Int
+  court                    Court    @relation(fields: [courtId], references: [id])
 }
 
 model OpeningHour {
-  id           Int    @id @default(autoincrement())
-  dayOfWeek    String        
-  openingTime  String
-  closingTime  String
+  id             Int             @id @default(autoincrement())
+  dayOfWeek      String
+  openingTime    String
+  closingTime    String
   sportsCenterId Int
-  sportsCenter TheSportsCenter @relation(fields: [sportsCenterId], references: [id])
+  sportsCenter   TheSportsCenter @relation(fields: [sportsCenterId], references: [id])
 }
 
 model Category {
-  id           Int    @id @default(autoincrement())
-  type    String
-  description String
-  imageUrl String
+  id                   Int      @id @default(autoincrement())
+  type                 String
+  description          String
+  imageUrl             String
   categoryCloudinaryId String
-  isDeleted Boolean @default(false)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  categoryCourt Court[]
+  isDeleted            Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  categoryCourt        Court[]
 }
 
 model Court {
-  id           Int    @id @default(autoincrement())
-  name String
-  price Float
-  discount Float    @default(0)
-  isDeleted Boolean @default(false)
-  time      Int
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  sportsCenterId  Int
-  isVip   Boolean @default(false)
-  sportsCenter TheSportsCenter @relation(fields: [sportsCenterId], references: [id])
-  categoryId  Int
-  category Category @relation(fields: [categoryId], references: [id])
-  amenities Amentity[]
-  attributes  Json?
-  flagTime  Int?
-  maximumTime Int?
-  booking Booking[]
-  comments  Comment[]
-  courtImages CourtImages[]
+  id             Int             @id @default(autoincrement())
+  name           String
+  price          Float
+  discount       Float           @default(0)
+  isDeleted      Boolean         @default(false)
+  time           Int
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  sportsCenterId Int
+  isVip          Boolean         @default(false)
+  sportsCenter   TheSportsCenter @relation(fields: [sportsCenterId], references: [id])
+  categoryId     Int
+  category       Category        @relation(fields: [categoryId], references: [id])
+  amenities      Amentity[]
+  attributes     Json?
+  flagTime       Int?
+  maximumTime    Int?
+  booking        Booking[]
+  comments       Comment[]
+  courtImages    CourtImages[]
 }
 
 model CourtImages {
-  id           Int    @id @default(autoincrement())
-  imageUrl     String
-  imageId String
-  courtId Int
-  court Court @relation(fields: [courtId], references: [id])
+  id       Int    @id @default(autoincrement())
+  imageUrl String
+  imageId  String
+  courtId  Int
+  court    Court  @relation(fields: [courtId], references: [id])
 }
 
 model Amentity {
-  id           Int    @id @default(autoincrement())
-  name  String
-  description  String
-  imageUrl  String
-  amentityCloudinaryId  String 
-  courts  Court[]
+  id                   Int     @id @default(autoincrement())
+  name                 String
+  description          String
+  imageUrl             String
+  amentityCloudinaryId String
+  courts               Court[]
 }
 
 model Booking {
-  id           Int    @id @default(autoincrement())
-  startDate String
-  startTime  String
-  endTime  String
-  playTime Int
-  cancelTime String
-  checkInTime String?
+  id            Int      @id @default(autoincrement())
+  startDate     String
+  startTime     String
+  endTime       String
+  playTime      Int
+  cancelTime    String
+  checkInTime   String?
   checkOutTime  String?
   statusBooking String
-  totalPrice  Float
-  notes String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  courtId Int
-  court Court @relation(fields: [courtId], references: [id])
-  billId Int
-  bill Bill @relation(fields: [billId], references: [id])
+  totalPrice    Float
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  courtId       Int
+  court         Court    @relation(fields: [courtId], references: [id])
+  billId        Int
+  bill          Bill     @relation(fields: [billId], references: [id])
 }
 
 model Bill {
-  id           Int    @id @default(autoincrement())
+  id            Int         @id @default(autoincrement())
   paymentMethod String
-  paymentStatus String 
-  amount Int
-  booking Booking[]
-  userId Int
-  user User @relation(fields: [userId], references: [id])
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  billDetail BillDetail?
+  paymentStatus String
+  amount        Int
+  booking       Booking[]
+  coupons       Coupon[]
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  billDetail    BillDetail?
 }
 
 model BillDetail {
-  id           Int    @id @default(autoincrement())
-  transactionId String
+  id               Int    @id @default(autoincrement())
+  transactionId    String
   reconciliationId String
-  partnerCode String
-  status String
-  errorCode Int
-  errorMessage  String
-  orderAmount Int
-  amount  Int
-  discountAmount Int
-  currency  String
-  bankCode  String
-  paymentMethod String
-  action  String
-  clientIp  String
-  createdAt String
-  updatedAt String
-  bill Bill @relation(fields: [billId], references: [id])
-  billId  Int @unique
+  partnerCode      String
+  status           String
+  errorCode        Int
+  errorMessage     String
+  orderAmount      Int
+  amount           Int
+  discountAmount   Int
+  currency         String
+  bankCode         String
+  paymentMethod    String
+  action           String
+  clientIp         String
+  createdAt        String
+  updatedAt        String
+  bill             Bill   @relation(fields: [billId], references: [id])
+  billId           Int    @unique
+}
+
+model Coupon {
+  id                   Int             @id @default(autoincrement())
+  status               String
+  code                 String
+  description          String
+  discountValue        Int
+  discountType         String
+  maxUsage             Int
+  usedCount            Int?
+  startDate            String
+  endDate              String
+  isDynamic            Boolean
+  metaData             Json?
+  minTotalAmount       Int
+  imageCloudId         String
+  ImageUrl             String
+  MaximumDiscountTotal Int?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  theSportsCenterId    Int
+  theSportsCenter      TheSportsCenter @relation(fields: [theSportsCenterId], references: [id])
+  Bill                 Bill[]
 }

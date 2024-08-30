@@ -14,6 +14,7 @@ import { CommentModule } from './comment/comment.module';
 import { BookingModule } from './booking/booking.module';
 import { AppotapayModule } from './appotapay/appotapay.module';
 import { RegionModule } from './region/region.module';
+import { CouponModule } from './coupon/coupon.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { RegionModule } from './region/region.module';
     BookingModule,
     AppotapayModule,
     RegionModule,
+    CouponModule,
   ],
   controllers: [AppController],
   providers: [AppService],
