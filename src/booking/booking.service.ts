@@ -10,6 +10,7 @@ import {
   BookingData,
   BookingDataByUser,
 } from './interfaces/booking-interface';
+import { log, time } from 'console';
 
 @Injectable()
 export class BookingService {
@@ -115,14 +116,85 @@ export class BookingService {
     if (!existingUser) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+
+    let amount: number = 0;
+    let totalDiscount: number = 0;
+
+    for (const booking of data.bookingData) {
+      const existingCourt = await this.prisma.court.findFirst({
+        where: { id: booking.courtId },
+      });
+
+      if (!existingCourt) {
+        throw new HttpException('Court not found', HttpStatus.NOT_FOUND);
+      }
+      const startTime = moment(booking.startTime, 'HH:mm');
+      const endTime = moment(booking.endTime, 'HH:mm');
+
+      const timePlay: number = endTime.diff(startTime, 'minutes');
+      const pricePerMinute: number = existingCourt.price / existingCourt.time;
+      amount += pricePerMinute * timePlay;
+
+      if (existingCourt.discount) {
+        amount -= (amount * existingCourt.discount) / 100;
+      }
+    }
+
+    for (const couponId of data.coupons) {
+      const existingCoupon = await this.prisma.coupon.findFirst({
+        where: { id: couponId },
+      });
+
+      if (!existingCoupon) {
+        throw new HttpException('Coupon not found', HttpStatus.NOT_FOUND);
+      }
+
+      const now = moment();
+      const startDate = moment(existingCoupon.startDate, 'YYYY-MM-DDTHH:mm:ss');
+      const endDate = moment(existingCoupon.endDate, 'YYYY-MM-DDTHH:mm:ss');
+
+      if (now.isBefore(startDate) || now.isAfter(endDate)) {
+        throw new HttpException(
+          'Coupon is not currently in use or has expired',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (existingCoupon.maxUsage <= (existingCoupon.usedCount || 0)) {
+        throw new HttpException(
+          'Number of expired coupons',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      if (
+        existingCoupon.isDynamic &&
+        existingCoupon.discountType === 'percentage'
+      ) {
+        totalDiscount = (amount * existingCoupon.discountValue) / 100;
+        if (
+          existingCoupon.MaximumDiscountTotal &&
+          totalDiscount > existingCoupon.MaximumDiscountTotal
+        ) {
+          totalDiscount = existingCoupon.MaximumDiscountTotal;
+        }
+      } else {
+        totalDiscount = existingCoupon.discountValue;
+      }
+
+      amount -= totalDiscount;
+    }
+
     const newBill = await this.prisma.bill.create({
       data: {
-        amount: data.amount,
+        amount: amount,
         paymentMethod: data.paymentMethod,
-        userId,
-        paymentStatus: BillStatus.Pending,
+        userId: existingUser.id,
+        paymentStatus: 'Pending',
+        totalDiscountAmount: totalDiscount,
       },
     });
+
     for (const element of data.bookingData) {
       const existingCourt = await this.prisma.court.findFirst({
         where: { id: element.courtId },
@@ -135,20 +207,23 @@ export class BookingService {
         );
       }
 
-      const startDate = this.convertDateTime(element.startDate).format(
-        'YYYY-MM-DD',
-      );
-      const startTime = this.convertDateTime(element.startTime).format('HH:mm');
-      const endTime = this.convertDateTime(element.endTime).format('HH:mm');
-      const timePlay = this.convertDateTime(element.endTime).diff(
-        this.convertDateTime(element.startTime),
+      const startDate = moment(element.startDate).format('YYYY-MM-DD');
+      const startTime = moment(element.startTime, 'HH:mm').format('HH:mm');
+      const endTime = moment(element.endTime, 'HH:mm').format('HH:mm');
+      const timePlay = moment(element.endTime, 'HH:mm').diff(
+        moment(element.startTime, 'HH:mm'),
         'minutes',
       );
-      const calculateCancelTime = this.convertDateTime(
-        element.startTime,
-      ).subtract(30, 'minutes');
-      const timeCancel = calculateCancelTime.format('HH:mm');
-
+      const timeCancel = moment(element.startTime, 'HH:mm')
+        .subtract(30, 'minutes')
+        .format('HH:mm'); 
+      let totalPriceBooking: number = 0;
+        const pricePerMinute: number = existingCourt.price / existingCourt.time;
+        totalPriceBooking += pricePerMinute * timePlay;
+  
+        if (existingCourt.discount) {
+          totalPriceBooking -= (amount * existingCourt.discount) / 100;
+        }
       await this.prisma.booking.create({
         data: {
           startDate,
@@ -156,13 +231,25 @@ export class BookingService {
           endTime,
           playTime: timePlay,
           cancelTime: timeCancel,
-          statusBooking: BookingStatus.Waiting,
-          totalPrice: element.totalPrice,
+          statusBooking: 'Waiting',
+          totalPrice: totalPriceBooking,
           courtId: element.courtId,
           billId: newBill.id,
         },
       });
     }
+
+    for (const couponId of data.coupons) {
+      await this.prisma.coupon.update({
+        where: { id: couponId },
+        data: {
+          usedCount: {
+            increment: 1,
+          },
+        },
+      });
+    }
+
     const billWithDetails = await this.prisma.bill.findUnique({
       where: { id: newBill.id },
       include: {
@@ -409,7 +496,7 @@ export class BookingService {
           id: booking.court.id,
           isVip: booking.court.isVip,
           images: booking.court.courtImages.map((image) => ({
-            imgageUrl: image.imageUrl,
+            imageUrl: image.imageUrl,
             imageId: image.imageId,
           })),
         },

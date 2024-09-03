@@ -39,7 +39,6 @@ export class BookingController {
   ) {
     try {
       const user = req['user'];
-
       const data = await this.bookingService.createdBooking(
         bookingDto,
         Number(user.id),

@@ -74,6 +74,7 @@ export class CourtController {
   @ApiResponse({ status: 200, description: 'Get all court successfully' })
   @ApiResponse({ status: 400, description: 'Error' })
   @UseGuards(AuthGuard, AdminGuard)
+  @ApiBearerAuth()
   async getAll(@Res() res: Response) {
     try {
       const data = await this.courtService.getAll();

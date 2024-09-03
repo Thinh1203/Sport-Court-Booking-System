@@ -193,6 +193,7 @@ export class SportsCenterService {
             },
           },
           theSportsCenterImages: true,
+          coupons: true
         },
       });
 
@@ -229,6 +230,7 @@ export class SportsCenterService {
             },
           },
           theSportsCenterImages: true,
+          coupons: true
         },
       });
     }
@@ -321,6 +323,7 @@ export class SportsCenterService {
         },
         theSportsCenterImages: true,
         openingHour: true,
+        coupons: true
       },
       orderBy: {
         view: 'desc',
@@ -370,6 +373,7 @@ export class SportsCenterService {
         distance: e.distance,
         averageStars: e.averageStars,
         images: e.theSportsCenterImages,
+        coupons: e.coupons
         // openingHours: e.openingHour
       })),
       total: result.length,
@@ -397,6 +401,7 @@ export class SportsCenterService {
         },
         theSportsCenterImages: true,
         openingHour: true,
+        coupons: true
       },
     });
 
@@ -447,6 +452,7 @@ export class SportsCenterService {
         distance: e.distance,
         averageStars: e.averageStars,
         images: e.theSportsCenterImages,
+        coupons: e.coupons
         // openingHours: e.openingHour
       })),
       total: result.length,
