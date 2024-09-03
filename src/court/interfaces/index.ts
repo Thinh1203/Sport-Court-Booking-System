@@ -1,4 +1,5 @@
 interface TimeLineBooking {
-    timeRange: string;
+    startTime: string;
+    endTime: string;
     freeTime: boolean;
 }

@@ -13,7 +13,6 @@ export const createBookingApiBody = ApiBody({
                         startDate: { type: 'string', example: '2024-08-15' },
                         startTime: { type: 'string', example: '15:00' },
                         endTime: { type: 'string', example: '16:00' },
-                        totalPrice: { type: 'number', example: 50000 },
                         courtId: { type: 'number', example: 1 }
                     },
                     required: ['startDate', 'startTime', 'endTime', 'totalPrice', 'courtId']
@@ -23,12 +22,11 @@ export const createBookingApiBody = ApiBody({
                         startDate: '2024-08-27',
                         startTime: '08:00',
                         endTime: '09:00',
-                        totalPrice: 50000,
                         courtId: 1
                     }
                 ]
             },
-            amount: { type: 'number', example: 50000 },
+            coupons: { type: 'array', example: [1,2,3,4] },
             paymentMethod: { type: 'string', example: 'ATM' }
         },
         required: ['bookingData', 'amount', 'paymentMethod']

@@ -16,10 +16,6 @@ class Booking {
 
     @IsNotEmpty()
     @IsInt()
-    totalPrice: number;
-
-    @IsNotEmpty()
-    @IsInt()
     courtId: number;
 }
 
@@ -30,8 +26,7 @@ export class ListBooking {
     bookingData: Booking[];
 
     @IsNotEmpty()
-    @IsNumber()
-    amount: number;
+    coupons: number[];
 
     @IsNotEmpty()
     @IsString()

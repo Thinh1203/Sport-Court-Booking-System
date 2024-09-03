@@ -192,6 +192,7 @@ model Bill {
   paymentMethod String
   paymentStatus String
   amount        Int
+  totalDiscountAmount Int?
   booking       Booking[]
   coupons       Coupon[]
   userId        Int

@@ -171,8 +171,9 @@ export class CourtService {
             break;
           }
           timeLineBooking.push({
-            timeRange: currentTime.format('H:mm'),
-            freeTime: false,
+            startTime: currentTime.format('H:mm'),
+            endTime: nextTime.format('H:mm'),
+            freeTime: true,
           });
           currentTime = nextTime;
         }
@@ -180,7 +181,7 @@ export class CourtService {
     });
 
     const listOfTimeBooking = timeLineBooking.map((slot) => {
-      const slotStartTime = moment(slot.timeRange, 'H:mm');
+      const slotStartTime = moment(slot.startTime, 'H:mm');
       const slotEndTime = slotStartTime.clone().add(60, 'minutes');
 
       const isBusy = existingCourt.booking.some((booking) => {
@@ -188,36 +189,12 @@ export class CourtService {
         const bookingEndTime = moment(booking.endTime, 'H:mm');
 
         return (
-          (slotStartTime.isSameOrAfter(bookingStartTime) &&
-            slotStartTime.isBefore(bookingEndTime)) ||
-          (slotEndTime.isAfter(bookingStartTime) &&
-            slotEndTime.isSameOrBefore(bookingEndTime)) ||
-          (slotStartTime.isBefore(bookingStartTime) &&
-            slotEndTime.isAfter(bookingEndTime))
+          slotStartTime.isBefore(bookingEndTime) &&
+          slotEndTime.isAfter(bookingStartTime)
         );
       });
 
-      if (!isBusy) {
-        const isBetweenBookings = existingCourt.booking.some(
-          (booking, index) => {
-            if (index + 1 < existingCourt.booking.length) {
-              const nextBooking = existingCourt.booking[index + 1];
-              const currentEndTime = moment(booking.endTime, 'H:mm');
-              const nextStartTime = moment(nextBooking.startTime, 'H:mm');
-
-              return (
-                slotStartTime.isSameOrAfter(currentEndTime) &&
-                slotEndTime.isSameOrBefore(nextStartTime)
-              );
-            }
-            return false;
-          },
-        );
-
-        if (isBetweenBookings) {
-          slot.freeTime = true;
-        }
-      } else {
+      if (isBusy) {
         slot.freeTime = false;
       }
       return slot;
