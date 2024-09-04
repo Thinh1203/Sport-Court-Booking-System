@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CouponDto } from './dto/coupon.dto';
 import { CouponInterface } from './interfaces';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { UpdateCouponDto } from './dto/update-coupon.dto';
 
 @Injectable()
 export class CouponService {
@@ -81,5 +82,84 @@ export class CouponService {
     }
 
     return existingCoupon;
+  }
+
+  async updateOneById(
+    id: number,
+    data: UpdateCouponDto,
+    file: Express.Multer.File | null,
+  ): Promise<CouponInterface> {
+    const existingCoupon = await this.prisma.coupon.findFirst({
+      where: { id },
+    });
+    if (!existingCoupon) {
+      throw new HttpException('Coupon not found', HttpStatus.NOT_FOUND);
+    }
+
+    if (file !== null) {
+      await this.cloudService.deleteFile(existingCoupon.imageCloudId);
+      const newFile = await this.cloudService.uploadFile(file, 240, 240);
+      return await this.prisma.coupon.update({
+        where: {
+          id,
+        },
+        data: {
+          status: data.status ?? existingCoupon.status,
+          code: data.code ?? existingCoupon.code,
+          description: data.description ?? existingCoupon.description,
+          discountValue: data.discountValue ?? existingCoupon.discountValue,
+          discountType: data.discountType ?? existingCoupon.discountType,
+          maxUsage: data.maxUsage ?? existingCoupon.maxUsage,
+          startDate: data.startDate ?? existingCoupon.startDate,
+          endDate: data.endDate ?? existingCoupon.endDate,
+          isDynamic: data.isDynamic ?? existingCoupon.isDynamic,
+          metaData: data.metaData ?? existingCoupon.metaData,
+          minTotalAmount: data.minTotalAmount ?? existingCoupon.minTotalAmount,
+          MaximumDiscountTotal:
+            data.MaximumDiscountTotal ?? existingCoupon.MaximumDiscountTotal,
+          imageCloudId: newFile.public_id,
+          ImageUrl: newFile.secure_url,
+        },
+      });
+    }
+    return await this.prisma.coupon.update({
+      where: {
+        id,
+      },
+      data: {
+        status: data.status ?? existingCoupon.status,
+        code: data.code ?? existingCoupon.code,
+        description: data.description ?? existingCoupon.description,
+        discountValue: data.discountValue ?? existingCoupon.discountValue,
+        discountType: data.discountType ?? existingCoupon.discountType,
+        maxUsage: data.maxUsage ?? existingCoupon.maxUsage,
+        startDate: data.startDate ?? existingCoupon.startDate,
+        endDate: data.endDate ?? existingCoupon.endDate,
+        isDynamic: data.isDynamic ?? existingCoupon.isDynamic,
+        metaData: data.metaData ?? existingCoupon.metaData,
+        minTotalAmount: data.minTotalAmount ?? existingCoupon.minTotalAmount,
+        MaximumDiscountTotal:
+          data.MaximumDiscountTotal ?? existingCoupon.MaximumDiscountTotal,
+      },
+    });
+  }
+
+  async getAllByTheSportsCenterId(id: number) {
+    const existingTheSportsCenter = await this.prisma.theSportsCenter.findFirst(
+      {
+        where: { id },
+      },
+    );
+    if (!existingTheSportsCenter) {
+      throw new HttpException(
+        'The sports center not found',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return await this.prisma.coupon.findMany({
+      where: {
+        theSportsCenterId: id,
+      },
+    });
   }
 }

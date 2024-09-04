@@ -10,7 +10,6 @@ import {
   BookingData,
   BookingDataByUser,
 } from './interfaces/booking-interface';
-import { log, time } from 'console';
 
 @Injectable()
 export class BookingService {
