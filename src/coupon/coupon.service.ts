@@ -4,6 +4,8 @@ import { CouponDto } from './dto/coupon.dto';
 import { CouponInterface } from './interfaces';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UpdateCouponDto } from './dto/update-coupon.dto';
+import { Cron } from '@nestjs/schedule';
+import * as moment from 'moment';
 
 @Injectable()
 export class CouponService {
@@ -159,6 +161,23 @@ export class CouponService {
     return await this.prisma.coupon.findMany({
       where: {
         theSportsCenterId: id,
+      },
+    });
+  }
+
+  @Cron('0 0 12 * * *')
+  async updateExpiredCoupons() {
+    const now = moment().format('YYYY-MM-DDTHH:mm:ss');
+    
+    await this.prisma.coupon.updateMany({
+      where: {
+        endDate: {
+          lt: now,
+        },
+        status: 'published',
+      },
+      data: {
+        status: 'expired', 
       },
     });
   }

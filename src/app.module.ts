@@ -15,6 +15,7 @@ import { BookingModule } from './booking/booking.module';
 import { AppotapayModule } from './appotapay/appotapay.module';
 import { RegionModule } from './region/region.module';
 import { CouponModule } from './coupon/coupon.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CouponModule } from './coupon/coupon.module';
     AppotapayModule,
     RegionModule,
     CouponModule,
+    ScheduleModule.forRoot()
   ],
   controllers: [AppController],
   providers: [AppService],
