@@ -188,18 +188,18 @@ model Booking {
 }
 
 model Bill {
-  id            Int         @id @default(autoincrement())
-  paymentMethod String
-  paymentStatus String
-  amount        Int
+  id                  Int         @id @default(autoincrement())
+  paymentMethod       String
+  paymentStatus       String
+  amount              Int
   totalDiscountAmount Int?
-  booking       Booking[]
-  coupons       Coupon[]
-  userId        Int
-  user          User        @relation(fields: [userId], references: [id])
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  billDetail    BillDetail?
+  booking             Booking[]
+  coupons             Coupon[]
+  userId              Int
+  user                User        @relation(fields: [userId], references: [id])
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  billDetail          BillDetail?
 }
 
 model BillDetail {

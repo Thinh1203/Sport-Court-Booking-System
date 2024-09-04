@@ -25,7 +25,6 @@ export class ListBooking {
     @Type(() => Booking)
     bookingData: Booking[];
 
-    @IsNotEmpty()
     coupons: number[];
 
     @IsNotEmpty()
