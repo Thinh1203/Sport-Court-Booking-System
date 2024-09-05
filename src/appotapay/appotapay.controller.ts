@@ -14,32 +14,14 @@ import { Response } from 'express';
 export class AppotapayController {
   constructor(private readonly appotaPayService: AppotapayService) {}
 
-  // @Get('redirect')
-  // async paymentResult(
-  //   @Query('data') data: string,
-  //   @Query('signature') signature: string,
-  //   @Res() res: Response,
-  // ) {
-  //   try {
-  //     const result = await this.appotaPayService.processingReturnedResult(
-  //       data,
-  //       signature,
-  //     );
-
-  //     return res.status(HttpStatus.CREATED).json({ result });
-  //   } catch (error) {
-  //     return res
-  //       .status(HttpStatus.BAD_GATEWAY)
-  //       .json({ message: 'Payment fail' });
-  //   }
-  // }
-
-  @Post('updateBookingStatus')
-  async updateBookingStatus(@Body() data: string, @Res() res: Response) {
+  @Get('redirect')
+  async paymentResult(@Query('data') data: string, @Res() res: Response) {
     try {
       const result = await this.appotaPayService.processingReturnedResult(data);
 
-      return res.status(HttpStatus.CREATED).json({ result });
+      return result === 'success'
+        ? res.redirect(`https://teksport-nu.vercel.app/result?isSuccess=true`)
+        : res.redirect(`https://teksport-nu.vercel.app/result?isSuccess=false`);
     } catch (error) {
       return res
         .status(HttpStatus.BAD_GATEWAY)
