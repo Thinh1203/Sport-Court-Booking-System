@@ -10,7 +10,7 @@ export class AppotapayService {
   private apiKey: string;
   private partnerKey: string;
   private secretKey: string;
-
+  private redirectUrl: string;
   constructor(
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
@@ -20,6 +20,7 @@ export class AppotapayService {
     this.apiKey = this.configService.get<string>('APPOTAPAY_API_KEY');
     this.secretKey = this.configService.get<string>('APPOTAPAY_API_SECRETKEY');
     this.partnerKey = this.configService.get<string>('APPOTAPAY_PARTNER_CODE');
+    this.redirectUrl = this.configService.get<string>('REDIRECT_URL');
   }
 
   private createJWT(): string {
@@ -75,7 +76,7 @@ export class AppotapayService {
         },
         notificationConfig: {
           notifyUrl: 'http://localhost:3030/appotapay/ipn',
-          redirectUrl: 'http://localhost:3000/result?isSuccess=true',
+          redirectUrl: this.redirectUrl,
         },
       },
     };
