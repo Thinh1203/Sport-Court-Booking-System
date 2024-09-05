@@ -174,11 +174,11 @@ export class BookingService {
 
   async updateBookingBill(data: any): Promise<string | any> {
     try {
+      const billId = (data.partnerReference.order.id).slice(4)
       if (data.transaction.errorCode === 0) {
-
         const bill = await this.prisma.bill.update({
           where: {
-            id: Number(data.partnerReference.order.id),
+            id: Number(billId),
           },
           data: {
             paymentStatus: BillStatus.Success,
@@ -224,7 +224,7 @@ export class BookingService {
         const notes = 'Payment Cancelled';
         const bill = await this.prisma.bill.update({
           where: {
-            id: Number(data.partnerReference.order.id),
+            id: Number(billId),
           },
           data: {
             paymentStatus: BillStatus.Cancelled,
@@ -276,10 +276,7 @@ export class BookingService {
       });
 
       if (!court) {
-        throw new HttpException(
-          'Court not found',
-          HttpStatus.NOT_FOUND,
-        );
+        throw new HttpException('Court not found', HttpStatus.NOT_FOUND);
       }
 
       const timePlayed = this.calculatePlayTime(
@@ -304,7 +301,7 @@ export class BookingService {
         amount: totalAmount,
         paymentMethod: data.paymentMethod,
         userId: existingUser.id,
-        paymentStatus: 'Pending',
+        paymentStatus: 'PENDING',
         totalDiscountAmount: totalDiscount,
       },
     });
@@ -520,6 +517,7 @@ export class BookingService {
       id: bill.id,
       paymentMethod: bill.paymentMethod,
       paymentStatus: bill.paymentStatus,
+      paymentUrl: bill.paymentUrl,
       amount: bill.amount,
       createdAt: this.convertDateTime(bill.createdAt).format(
         'YYYY-MM-DDTHH:mm:ss',
