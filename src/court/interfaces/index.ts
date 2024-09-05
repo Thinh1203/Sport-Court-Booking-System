@@ -1,5 +1,5 @@
-interface TimeLineBooking {
-    startTime: string;
-    endTime: string;
-    freeTime: boolean;
+export interface TimeLineBooking {
+  startTime: string;
+  endTime: string;
+  freeTime: boolean;
 }
