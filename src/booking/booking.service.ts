@@ -483,7 +483,7 @@ export class BookingService {
           id: booking.court.id,
           isVip: booking.court.isVip,
           images: booking.court.courtImages.map((image) => ({
-            imgageUrl: image.imageUrl,
+            imageUrl: image.imageUrl,
             imageId: image.imageId,
           })),
         },
