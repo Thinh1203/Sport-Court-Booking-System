@@ -33,7 +33,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     AppotapayModule,
     RegionModule,
     CouponModule,
-    ScheduleModule.forRoot()
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],

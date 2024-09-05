@@ -5,6 +5,7 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { courtDataUpdate } from './dto/update/data-update';
 import * as moment from 'moment-timezone';
 import { CourtFilter } from './dto/court-filter.dto';
+import { TimeLineBooking } from './interfaces';
 
 @Injectable()
 export class CourtService {

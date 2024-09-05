@@ -17,6 +17,156 @@ export class BookingService {
     private readonly prisma: PrismaService,
     private readonly appotapayService: AppotapayService,
   ) {}
+  private calculatePlayTime(startTime: string, endTime: string): number {
+    const start = moment(startTime, 'HH:mm');
+    const end = moment(endTime, 'HH:mm');
+    return end.diff(start, 'minutes');
+  }
+
+  private calculateCourtCost(
+    price: number,
+    courtTime: number,
+    playTime: number,
+    discount?: number,
+  ): number {
+    const pricePerMinute = price / courtTime;
+    let totalPrice = pricePerMinute * playTime;
+    if (discount) {
+      totalPrice -= (totalPrice * discount) / 100;
+    }
+    return totalPrice;
+  }
+
+  private async applyCoupons(
+    coupons: number[],
+    amount: number,
+  ): Promise<number> {
+    let totalDiscount = 0;
+
+    if (coupons && coupons.length > 0) {
+      for (const couponId of coupons) {
+        const coupon = await this.prisma.coupon.findUnique({
+          where: { id: couponId },
+        });
+        if (!coupon)
+          throw new HttpException('Coupon not found', HttpStatus.NOT_FOUND);
+
+        this.validateCoupon(coupon);
+
+        const discount = this.calculateCouponDiscount(coupon, amount);
+        totalDiscount += discount;
+      }
+    }
+
+    return totalDiscount;
+  }
+
+  private validateCoupon(coupon: any) {
+    const now = moment();
+    if (now.isBefore(coupon.startDate) || now.isAfter(coupon.endDate)) {
+      throw new HttpException(
+        'Coupon expired or not in use',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (coupon.maxUsage <= (coupon.usedCount || 0)) {
+      throw new HttpException(
+        'Coupon usage limit exceeded',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  private calculateCouponDiscount(coupon: any, amount: number): number {
+    let discount = 0;
+    if (coupon.isDynamic && coupon.discountType === 'percentage') {
+      discount = (amount * coupon.discountValue) / 100;
+      if (
+        coupon.maximumDiscountTotal &&
+        discount > coupon.maximumDiscountTotal
+      ) {
+        discount = coupon.maximumDiscountTotal;
+      }
+    } else {
+      discount = coupon.discountValue;
+    }
+    return discount;
+  }
+
+  private async createBookings(bookings: any[], billId: number) {
+    for (const booking of bookings) {
+      const court = await this.prisma.court.findUnique({
+        where: { id: booking.courtId },
+      });
+
+      if (!court)
+        throw new HttpException('Court not found', HttpStatus.NOT_FOUND);
+
+      const playTime = this.calculatePlayTime(
+        booking.startTime,
+        booking.endTime,
+      );
+      const pricePerMinute = court.price / court.time;
+      const totalPrice = pricePerMinute * playTime - (court.discount || 0);
+
+      const startDate = moment(booking.startDate).format('YYYY-MM-DD');
+      const cancelTime = moment(booking.startTime, 'HH:mm')
+        .subtract(30, 'minutes')
+        .format('HH:mm');
+
+      await this.prisma.booking.create({
+        data: {
+          startDate,
+          startTime: booking.startTime,
+          endTime: booking.endTime,
+          playTime,
+          cancelTime,
+          statusBooking: 'WAITING',
+          totalPrice,
+          courtId: booking.courtId,
+          billId,
+        },
+      });
+    }
+  }
+
+  private async updateCouponUsage(coupons: number[]) {
+    for (const couponId of coupons) {
+      await this.prisma.coupon.update({
+        where: { id: couponId },
+        data: { usedCount: { increment: 1 } },
+      });
+    }
+  }
+
+  private async getBillDetails(billId: number) {
+    return await this.prisma.bill.findUnique({
+      where: { id: billId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+        booking: {
+          select: {
+            id: true,
+            startDate: true,
+            startTime: true,
+            endTime: true,
+            cancelTime: true,
+            playTime: true,
+            totalPrice: true,
+            statusBooking: true,
+          },
+        },
+      },
+    });
+  }
 
   private convertDateTime(dateTime: string | Date): moment.Moment {
     return moment.tz(dateTime, 'Asia/Ho_Chi_Minh');
@@ -25,6 +175,7 @@ export class BookingService {
   async updateBookingBill(data: any): Promise<string | any> {
     try {
       if (data.transaction.errorCode === 0) {
+
         const bill = await this.prisma.bill.update({
           where: {
             id: Number(data.partnerReference.order.id),
@@ -101,7 +252,7 @@ export class BookingService {
   }
 
   async createdBooking(data: ListBooking, userId: number) {
-    const existingUser = await this.prisma.user.findFirst({
+    const existingUser = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -111,85 +262,46 @@ export class BookingService {
         avatar: true,
       },
     });
+
     if (!existingUser) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    let amount: number = 0;
-    let totalDiscount: number = 0;
+    let totalAmount = 0;
+    let totalDiscount = 0;
 
     for (const booking of data.bookingData) {
-      const existingCourt = await this.prisma.court.findFirst({
+      const court = await this.prisma.court.findUnique({
         where: { id: booking.courtId },
       });
 
-      if (!existingCourt) {
-        throw new HttpException('Court not found', HttpStatus.NOT_FOUND);
-      }
-      const startTime = moment(booking.startTime, 'HH:mm');
-      const endTime = moment(booking.endTime, 'HH:mm');
-      const timePlay: number = endTime.diff(startTime, 'minutes');
-      const pricePerMinute: number = existingCourt.price / existingCourt.time;
-      amount += pricePerMinute * timePlay;
-
-      if (existingCourt.discount) {
-        amount -= (amount * existingCourt.discount) / 100;
-      }
-    }
-
-    if (data.coupons && data.coupons.length > 0) {
-      for (const couponId of data.coupons) {
-        const existingCoupon = await this.prisma.coupon.findFirst({
-          where: { id: couponId },
-        });
-
-        if (!existingCoupon) {
-          throw new HttpException('Coupon not found', HttpStatus.NOT_FOUND);
-        }
-
-        const now = moment();
-        const startDate = moment(
-          existingCoupon.startDate,
-          'YYYY-MM-DDTHH:mm:ss',
+      if (!court) {
+        throw new HttpException(
+          'Court not found',
+          HttpStatus.NOT_FOUND,
         );
-        const endDate = moment(existingCoupon.endDate, 'YYYY-MM-DDTHH:mm:ss');
-
-        if (now.isBefore(startDate) || now.isAfter(endDate)) {
-          throw new HttpException(
-            'Coupon is not currently in use or has expired',
-            HttpStatus.NOT_FOUND,
-          );
-        }
-
-        if (existingCoupon.maxUsage <= (existingCoupon.usedCount || 0)) {
-          throw new HttpException(
-            'Number of expired coupons',
-            HttpStatus.NOT_FOUND,
-          );
-        }
-
-        if (
-          existingCoupon.isDynamic &&
-          existingCoupon.discountType === 'percentage'
-        ) {
-          totalDiscount = (amount * existingCoupon.discountValue) / 100;
-          if (
-            existingCoupon.MaximumDiscountTotal &&
-            totalDiscount > existingCoupon.MaximumDiscountTotal
-          ) {
-            totalDiscount = existingCoupon.MaximumDiscountTotal;
-          }
-        } else {
-          totalDiscount = existingCoupon.discountValue;
-        }
-
-        amount -= totalDiscount;
       }
+
+      const timePlayed = this.calculatePlayTime(
+        booking.startTime,
+        booking.endTime,
+      );
+      const amount = this.calculateCourtCost(
+        court.price,
+        court.time,
+        timePlayed,
+        court.discount,
+      );
+
+      totalAmount += amount;
     }
+
+    totalDiscount = await this.applyCoupons(data.coupons, totalAmount);
+    totalAmount -= totalDiscount;
 
     const newBill = await this.prisma.bill.create({
       data: {
-        amount,
+        amount: totalAmount,
         paymentMethod: data.paymentMethod,
         userId: existingUser.id,
         paymentStatus: 'Pending',
@@ -197,92 +309,22 @@ export class BookingService {
       },
     });
 
-    for (const element of data.bookingData) {
-      const existingCourt = await this.prisma.court.findFirst({
-        where: { id: element.courtId },
-      });
-
-      if (!existingCourt) {
-        throw new HttpException(
-          `Court with ID ${element.courtId} not found`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      const startDate = moment(element.startDate).format('YYYY-MM-DD');
-      const startTime = moment(element.startTime, 'HH:mm').format('HH:mm');
-      const endTime = moment(element.endTime, 'HH:mm').format('HH:mm');
-      const timePlay = moment(element.endTime, 'HH:mm').diff(
-        moment(element.startTime, 'HH:mm'),
-        'minutes',
-      );
-      const timeCancel = moment(element.startTime, 'HH:mm')
-        .subtract(30, 'minutes')
-        .format('HH:mm');
-      let totalPriceBooking: number = 0;
-      const pricePerMinute: number = existingCourt.price / existingCourt.time;
-      totalPriceBooking += pricePerMinute * timePlay;
-
-      if (existingCourt.discount) {
-        totalPriceBooking -= (amount * existingCourt.discount) / 100;
-      }
-
-      await this.prisma.booking.create({
-        data: {
-          startDate,
-          startTime,
-          endTime,
-          playTime: timePlay,
-          cancelTime: timeCancel,
-          statusBooking: 'Waiting',
-          totalPrice: totalPriceBooking,
-          courtId: element.courtId,
-          billId: newBill.id,
-        },
-      });
-    }
+    await this.createBookings(data.bookingData, newBill.id);
 
     if (data.coupons && data.coupons.length > 0) {
-      for (const couponId of data.coupons) {
-        await this.prisma.coupon.update({
-          where: { id: couponId },
-          data: {
-            usedCount: {
-              increment: 1,
-            },
-          },
-        });
-      }
+      await this.updateCouponUsage(data.coupons);
     }
 
-    const billWithDetails = await this.prisma.bill.findUnique({
+    const billWithDetails = await this.getBillDetails(newBill.id);
+
+    const dataPayment = await this.appotapayService.createTransaction(newBill);
+
+    await this.prisma.bill.update({
       where: { id: newBill.id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            fullName: true,
-            email: true,
-            phoneNumber: true,
-          },
-        },
-        booking: {
-          select: {
-            id: true,
-            startDate: true,
-            startTime: true,
-            endTime: true,
-            cancelTime: true,
-            playTime: true,
-            totalPrice: true,
-            statusBooking: true,
-          },
-        },
+      data: {
+        paymentUrl: dataPayment.payment.url,
       },
     });
-
-    // Initiate payment
-    const dataPayment = await this.appotapayService.createTransaction(newBill);
 
     return {
       billWithDetails,
@@ -502,6 +544,7 @@ export class BookingService {
         court: {
           id: booking.court.id,
           isVip: booking.court.isVip,
+          name: booking.court.name,
           images: booking.court.courtImages.map((image) => ({
             imageUrl: image.imageUrl,
             imageId: image.imageId,
