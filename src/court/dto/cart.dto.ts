@@ -1,12 +1,11 @@
 import { IsString, IsNumber, IsDateString, IsNotEmpty } from 'class-validator';
 
-export class AddToCartDto {
+export class CartDto {
   @IsNotEmpty()
   @IsNumber()
   courtId: number;
 
   @IsNotEmpty()
-  @IsDateString()
   startDate: string;
 
   @IsNotEmpty()
@@ -16,4 +15,7 @@ export class AddToCartDto {
   @IsNotEmpty()
   @IsString()
   endTime: string;
+
+  @IsString()
+  userId: string;
 }

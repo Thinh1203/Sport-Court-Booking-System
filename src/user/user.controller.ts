@@ -173,9 +173,10 @@ export class UserController {
         @Res() res: Response
     ) {
     try {
-        await this.userService.uploadAvatarById(Number(id), file);
+        const data = await this.userService.uploadAvatarById(Number(id), file);
             return res.status(HttpStatus.OK).json({
                 statusCode: HttpStatus.OK,
+                data,
                 message: 'Avatar uploaded successfully'
             })
      } catch (error) {
@@ -201,9 +202,10 @@ export class UserController {
     @Res() res: Response
     ) : Promise<any> {
     try {
-        await this.userService.uploadBackgroundById(Number(id), file);
+        const data = await this.userService.uploadBackgroundById(Number(id), file);
             return res.status(HttpStatus.OK).json({
                 statusCode: HttpStatus.OK,
+                data,
                 message: 'Background uploaded successfully'
             })
      } catch (error) {

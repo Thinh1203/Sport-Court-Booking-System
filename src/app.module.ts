@@ -17,6 +17,7 @@ import { RegionModule } from './region/region.module';
 import { CouponModule } from './coupon/coupon.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { InfobipModule } from './infobip/infobip.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -36,6 +37,10 @@ import { InfobipModule } from './infobip/infobip.module';
     CouponModule,
     ScheduleModule.forRoot(),
     InfobipModule,
+    CacheModule.register({
+      isGlobal: true,
+      max: 100
+    })
   ],
   controllers: [AppController],
   providers: [AppService],

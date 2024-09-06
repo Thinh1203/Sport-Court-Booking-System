@@ -7,7 +7,6 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as speakeasy from 'speakeasy';
 import { UpdatePasswordByEmail } from './dto/update-password.dto';
-import { AppService } from 'src/app.service';
 import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()

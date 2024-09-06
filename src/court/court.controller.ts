@@ -28,13 +28,34 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { createCourtApiBody, updateCourtApiBody } from './swagger';
+import { addNewCart, createCourtApiBody, updateCourtApiBody } from './swagger';
 import { CourtFilter } from './dto/court-filter.dto';
+import { CartDto } from './dto/cart.dto';
 
 @ApiTags('court')
 @Controller('court')
 export class CourtController {
   constructor(private readonly courtService: CourtService) {}
+
+  @Post('addNewCard')
+  @addNewCart
+  async addNewCard(
+    @Body() cartDto: CartDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const data = await this.courtService.updateCourtStatusByCart(cartDto);
+      return res.status(HttpStatus.OK).json({
+        statusCode: HttpStatus.OK,
+        data
+      });
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: error.message,
+      });
+    }
+  }
 
   @Post('')
   @UseGuards(AuthGuard, AdminGuard)
