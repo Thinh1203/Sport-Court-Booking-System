@@ -21,12 +21,12 @@ export class AuthService {
 
   private otpCache = new Map<string, { otp: string; expiresAt: number }>();
 
-  private saveOTPToMemory(email: string, otp: string) {
+  private saveOTPToMemory(emailOrPhoneNumber: string, otp: string) {
     const expiresAt = Date.now() + 120000;
-    this.otpCache.set(email, { otp, expiresAt });
+    this.otpCache.set(emailOrPhoneNumber, { otp, expiresAt });
 
     setTimeout(() => {
-      this.otpCache.delete(email);
+      this.otpCache.delete(emailOrPhoneNumber);
     }, 120000);
   }
 
@@ -198,6 +198,29 @@ export class AuthService {
     this.saveOTPToMemory(existingUser.email, otp);
     const subject = 'Refresh Password';
     const html = `<p>OTP code to update new password: <b>${otp}</b></p>`;
+    await this.sendEmail(existingUser.email, subject, html);
+    return 'success';
+  }
+
+  async generateOTPBooking(id: number): Promise<string> {
+    const existingUser = await this.prisma.user.findFirst({
+      where: {
+        id,
+      },
+    });
+
+    if (!existingUser) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    const otp = speakeasy.totp({
+      secret: this.configService.get<string>('OTP_SECRET'),
+      encoding: this.configService.get<string>('OTP_ENDCODEDING'),
+      digits: Number(this.configService.get<string>('OTP_DIGITS')),
+      step: Number(this.configService.get<string>('OTP_STEP')),
+    });
+    this.saveOTPToMemory(existingUser.email, otp);
+    const subject = 'OTP Booking';
+    const html = `<p>OTP code to accept booking: <b>${otp}</b></p>`;
     await this.sendEmail(existingUser.email, subject, html);
     return 'success';
   }
