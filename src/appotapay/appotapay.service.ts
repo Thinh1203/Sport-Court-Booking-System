@@ -76,7 +76,7 @@ export class AppotapayService {
         },
         notificationConfig: {
           notifyUrl: 'http://localhost:3030/appotapay/ipn',
-          redirectUrl: 'http://localhost:3030/appotapay/redirect'
+          redirectUrl: 'https://sport-court-booking-system.onrender.com/appotapay/redirect'
         },
       },
     };
