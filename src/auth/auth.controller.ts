@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Patch,
   Post,
+  Req,
   Res,
   UseGuards,
   UsePipes,
@@ -16,7 +17,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { AuthGuard } from './auth.guard';
 import { UpdatePasswordByEmail } from './dto/update-password.dto';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   forgotPasswordApi,
   loginUserApi,
@@ -115,6 +116,27 @@ export class AuthController {
     }
   }
 
+  @Post('generateOTPBooking')
+  @UseGuards(AuthGuard)
+  @ApiResponse({ status: 201, description: 'OTP created successfully' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  @ApiResponse({ status: 400, description: 'Error' })
+  @ApiBearerAuth()
+  async generateOTPBooking(@Req() req: Request, @Res() res: Response) {
+    try {
+      const user = req['user'];
+      await this.authService.generateOTPBooking(Number(user.id));
+      return res.status(HttpStatus.CREATED).json({
+        statusCode: HttpStatus.CREATED,
+        message: 'Email sent successfully',
+      });
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: HttpStatus.BAD_REQUEST,
+        error: error.message,
+      });
+    }
+  }
   @Post('verify-otp')
   @ApiResponse({ status: 200, description: 'OTP correct' })
   @ApiResponse({ status: 401, description: 'OTP incorrect' })
