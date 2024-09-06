@@ -3,3 +3,10 @@ export interface TimeLineBooking {
   endTime: string;
   freeTime: boolean;
 }
+
+export interface CartData {
+  startDate: string;
+  startTime: string; 
+  endTime: string;
+  courtId: number;
+}

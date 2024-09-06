@@ -176,7 +176,7 @@ export class UserService {
     });
   }
 
-  async uploadAvatarById(id: number, file: Express.Multer.File): Promise<any> {
+  async uploadAvatarById(id: number, file: Express.Multer.File) {
     const existingUser = await this.prisma.user.findUnique({
       where: {
         id,
@@ -194,7 +194,7 @@ export class UserService {
       300,
       300,
     );
-    return await this.prisma.user.update({
+    const result = await this.prisma.user.update({
       where: {
         id,
       },
@@ -203,6 +203,7 @@ export class UserService {
         avatarCloudinaryId: uploadResult.public_id,
       },
     });
+    return result.avatar;
   }
 
   async uploadBackgroundById(
@@ -233,7 +234,7 @@ export class UserService {
       500,
     );
 
-    return await this.prisma.user.update({
+    const data = await this.prisma.user.update({
       where: {
         id,
       },
@@ -242,5 +243,6 @@ export class UserService {
         backgroundCloudinaryId: uploadResult.public_id,
       },
     });
+    return data.background;
   }
 }
