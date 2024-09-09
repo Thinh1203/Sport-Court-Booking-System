@@ -29,8 +29,10 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/jwt": "^10.2.0",
     "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-socket.io": "^10.4.1",
     "@nestjs/schedule": "^4.1.0",
     "@nestjs/swagger": "^7.4.0",
+    "@nestjs/websockets": "^10.4.1",
     "@prisma/client": "^5.18.0",
     "axios": "^1.7.4",
     "bcrypt": "^5.1.1",
@@ -47,6 +49,7 @@
     "pg": "^8.12.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.7.5",
     "speakeasy": "^2.0.0",
     "streamifier": "^0.1.1",
     "typeorm": "^0.3.20"

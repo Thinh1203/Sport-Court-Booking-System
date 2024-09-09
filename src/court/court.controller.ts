@@ -37,26 +37,6 @@ import { CartDto } from './dto/cart.dto';
 export class CourtController {
   constructor(private readonly courtService: CourtService) {}
 
-  @Post('addNewCard')
-  @addNewCart
-  async addNewCard(
-    @Body() cartDto: CartDto,
-    @Res() res: Response,
-  ) {
-    try {
-      const data = await this.courtService.updateCourtStatusByCart(cartDto);
-      return res.status(HttpStatus.OK).json({
-        statusCode: HttpStatus.OK,
-        data
-      });
-    } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: error.message,
-      });
-    }
-  }
-
   @Post('')
   @UseGuards(AuthGuard, AdminGuard)
   @ApiResponse({ status: 201, description: 'Created court successfully' })
@@ -159,6 +139,21 @@ export class CourtController {
       return res.status(HttpStatus.OK).json({
         statusCode: HttpStatus.OK,
         message: 'Updated successfully',
+      });
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: error.message,
+      });
+    }
+  }
+
+  @Post('add-to-cart')
+  async addToCart(@Body() cartDto: CartDto, @Res() res: Response) {
+    try {
+      await this.courtService.addToCart(cartDto);
+      return res.status(HttpStatus.OK).json({
+        statusCode: HttpStatus.OK,
       });
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({

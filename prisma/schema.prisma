@@ -168,23 +168,24 @@ model Amentity {
 }
 
 model Booking {
-  id            Int      @id @default(autoincrement())
-  startDate     String
-  startTime     String
-  endTime       String
-  playTime      Int
-  cancelTime    String
-  checkInTime   String?
-  checkOutTime  String?
-  statusBooking String
-  totalPrice    Float
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  courtId       Int
-  court         Court    @relation(fields: [courtId], references: [id])
-  billId        Int
-  bill          Bill     @relation(fields: [billId], references: [id])
+  id                Int      @id @default(autoincrement())
+  startDate         String
+  startTime         String
+  endTime           String
+  playTime          Int
+  cancelTime        String
+  cancelBookingTime String?
+  checkInTime       String?
+  checkOutTime      String?
+  statusBooking     String
+  totalPrice        Float
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  courtId           Int
+  court             Court    @relation(fields: [courtId], references: [id])
+  billId            Int
+  bill              Bill     @relation(fields: [billId], references: [id])
 }
 
 model Bill {

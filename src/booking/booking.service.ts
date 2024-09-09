@@ -174,7 +174,7 @@ export class BookingService {
 
   async updateBookingBill(data: any): Promise<string | any> {
     try {
-      const billId = (data.partnerReference.order.id).slice(4)
+      const billId = data.partnerReference.order.id.slice(4);
       if (data.transaction.errorCode === 0) {
         const bill = await this.prisma.bill.update({
           where: {
@@ -551,5 +551,43 @@ export class BookingService {
       })),
     }));
     return result;
+  }
+
+  async updateBookingStatus(id: number, status: string) {
+    const existingBooking = await this.prisma.booking.findFirst({
+      where: { id },
+    });
+    if (!existingBooking) {
+      throw new HttpException('Booking not found', HttpStatus.NOT_FOUND);
+    }
+    const now = moment().format('YYYY-MM-DD HH:mm:ss');
+    if (status === 'ACTIVE') {
+      return await this.prisma.booking.update({
+        where: { id },
+        data: {
+          statusBooking: BookingStatus.Active,
+          checkInTime: now,
+        },
+      });
+    }
+    if (status === 'SUCCESS') {
+      return await this.prisma.booking.update({
+        where: { id },
+        data: {
+          statusBooking: BookingStatus.Success,
+          checkOutTime: now,
+        },
+      });
+    }
+    if (status === 'CANCELLED') {
+      return await this.prisma.booking.update({
+        where: {id},
+        data: {
+          statusBooking: BookingStatus.Cancelled,
+          cancelBookingTime: now
+        }
+      })
+    }
+    return 'error';
   }
 }

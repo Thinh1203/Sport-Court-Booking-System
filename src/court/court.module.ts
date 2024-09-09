@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { CourtController } from './court.controller';
 import { CourtService } from './court.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { SocketModule } from 'src/socket/socket.module';
 
 @Module({
   controllers: [CourtController],
@@ -11,7 +12,9 @@ import { AuthModule } from 'src/auth/auth.module';
   imports: [
     PrismaModule,
     CloudinaryModule,
-    AuthModule
-  ]
+    AuthModule,
+    forwardRef(() => SocketModule)
+  ],
+  exports: [CourtService]
 })
 export class CourtModule {}

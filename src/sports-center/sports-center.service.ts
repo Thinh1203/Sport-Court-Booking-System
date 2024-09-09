@@ -193,7 +193,7 @@ export class SportsCenterService {
             },
           },
           theSportsCenterImages: true,
-          coupons: true
+          coupons: true,
         },
       });
 
@@ -230,7 +230,7 @@ export class SportsCenterService {
             },
           },
           theSportsCenterImages: true,
-          coupons: true
+          coupons: true,
         },
       });
     }
@@ -288,6 +288,15 @@ export class SportsCenterService {
             })
           : [],
       },
+      // data: {
+      //   sports: listSportsCenter,
+      //   regions: query.search
+      //     ? await this.prisma.$queryRawUnsafe(
+      //         `SELECT * FROM region WHERE name LIKE '%${query.search}%'`,
+      //       )
+      //     : [],
+      // },
+
       currentPage: page,
       lastPage,
       previousPage,
@@ -323,7 +332,7 @@ export class SportsCenterService {
         },
         theSportsCenterImages: true,
         openingHour: true,
-        coupons: true
+        coupons: true,
       },
       orderBy: {
         view: 'desc',
@@ -373,7 +382,7 @@ export class SportsCenterService {
         distance: e.distance,
         averageStars: e.averageStars,
         images: e.theSportsCenterImages,
-        coupons: e.coupons
+        coupons: e.coupons,
         // openingHours: e.openingHour
       })),
       total: result.length,
@@ -401,7 +410,7 @@ export class SportsCenterService {
         },
         theSportsCenterImages: true,
         openingHour: true,
-        coupons: true
+        coupons: true,
       },
     });
 
@@ -452,7 +461,7 @@ export class SportsCenterService {
         distance: e.distance,
         averageStars: e.averageStars,
         images: e.theSportsCenterImages,
-        coupons: e.coupons
+        coupons: e.coupons,
         // openingHours: e.openingHour
       })),
       total: result.length,
@@ -618,6 +627,7 @@ export class SportsCenterService {
               name: e.name,
               price: e.price,
               discount: e.discount,
+              images: e.courtImages,
               isDeleted: e.isDeleted,
               time: e.time,
               amenities: e.amenities,
@@ -672,6 +682,7 @@ export class SportsCenterService {
           isDeleted: e.isDeleted,
           time: e.time,
           isVip: e.isVip,
+          images: e.courtImages,
           attributes: e.attributes,
           flagTime: e.flagTime,
           maximumTime: e.maximumTime,
