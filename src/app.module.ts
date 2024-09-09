@@ -18,6 +18,8 @@ import { CouponModule } from './coupon/coupon.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { InfobipModule } from './infobip/infobip.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { SocketModule } from './socket/socket.module';
+
 
 @Module({
   imports: [
@@ -39,8 +41,11 @@ import { CacheModule } from '@nestjs/cache-manager';
     InfobipModule,
     CacheModule.register({
       isGlobal: true,
-      max: 100
-    })
+      max: 100,
+      ttl: 300
+    }),
+    SocketModule,
+    
   ],
   controllers: [AppController],
   providers: [AppService],

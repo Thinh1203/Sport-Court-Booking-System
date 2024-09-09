@@ -4,6 +4,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -137,6 +138,26 @@ export class BookingController {
   async getBookingById(@Param('id') id: string, @Res() res: Response) {
     try {
       const data = await this.bookingService.getBookingById(Number(id));
+      return res.status(HttpStatus.OK).json({
+        statusCode: HttpStatus.OK,
+        data,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: error.message,
+      });
+    }
+  }
+
+  @Patch(':id')
+  async updateBookingStatus(
+    @Param('id') id: string,
+    @Res() res: Response,
+    @Body() { status },
+  ) {
+    try {
+      const data = await this.bookingService.updateBookingStatus(Number(id), status);
       return res.status(HttpStatus.OK).json({
         statusCode: HttpStatus.OK,
         data,
