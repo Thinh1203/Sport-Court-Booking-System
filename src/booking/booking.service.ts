@@ -496,10 +496,14 @@ export class BookingService {
     };
   }
 
+  // #region Get booking by userId
   async getBookingByUserId(userId: number): Promise<BookingDataByUser | any> {
     const bills = await this.prisma.bill.findMany({
       where: {
         userId,
+      },
+      orderBy: {
+        id: 'desc'
       },
       include: {
         booking: {
@@ -552,7 +556,9 @@ export class BookingService {
     }));
     return result;
   }
+  // #endregion
 
+  // #region Update booking status
   async updateBookingStatus(id: number, status: string) {
     const existingBooking = await this.prisma.booking.findFirst({
       where: { id },
@@ -581,13 +587,14 @@ export class BookingService {
     }
     if (status === 'CANCELLED') {
       return await this.prisma.booking.update({
-        where: {id},
+        where: { id },
         data: {
           statusBooking: BookingStatus.Cancelled,
-          cancelBookingTime: now
-        }
-      })
+          cancelBookingTime: now,
+        },
+      });
     }
     return 'error';
   }
+  // #endregion
 }

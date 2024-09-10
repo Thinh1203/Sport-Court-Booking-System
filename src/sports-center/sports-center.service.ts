@@ -7,6 +7,7 @@ import {
   SportsCenterFilterDto,
 } from './dto/sports-center.filter.dto';
 import { SportsCenterDataDto } from './dto/update/data.dto';
+import { SportCenterDataReturn } from './interfaces';
 
 @Injectable()
 export class SportsCenterService {
@@ -118,7 +119,9 @@ export class SportsCenterService {
     return newSportsCenter;
   }
 
-  async getAllSportsCenter(query: SportsCenterFilterDto): Promise<any> {
+  async getAllSportsCenter(
+    query: SportsCenterFilterDto,
+  ): Promise<SportCenterDataReturn> {
     const itemsPerPage = Number(query.items_per_page) || 10;
     const page = Number(query.page) || 1;
     const skip = (page - 1) * itemsPerPage;

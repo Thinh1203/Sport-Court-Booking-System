@@ -34,8 +34,8 @@ export class SocketService
     @ConnectedSocket() socket: Socket,
     @MessageBody() data: { courtId: number; date: string },
   ) {
-    const oldChannels = Array.from(socket.rooms);
-    oldChannels.forEach((channel) => socket.leave(channel));
+    // const oldChannels = Array.from(socket.rooms);
+    // oldChannels.forEach((channel) => socket.leave(channel));
     
     const channelName = `court-${data.courtId}-${data.date}`;
 
@@ -45,7 +45,6 @@ export class SocketService
       data.courtId,
       data.date,
     );
-
     this.server.to(channelName).emit('courtData', availableTimes);
   }
 

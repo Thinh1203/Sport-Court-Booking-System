@@ -41,8 +41,7 @@ import { SocketModule } from './socket/socket.module';
     InfobipModule,
     CacheModule.register({
       isGlobal: true,
-      max: 100,
-      ttl: 300
+      max: 100
     }),
     SocketModule,
     
