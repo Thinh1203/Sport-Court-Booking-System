@@ -302,7 +302,7 @@ export class CourtService {
         amenities: true,
         booking: {
           where: {
-            AND: [
+           AND: [
               {
                 startDate: {
                   equals: toDay,
@@ -472,9 +472,18 @@ export class CourtService {
         amenities: true,
         booking: {
           where: {
-            startDate: {
-              equals: toDay,
-            },
+            AND: [
+              {
+                startDate: {
+                  equals: toDay,
+                },
+              },
+              {
+                statusBooking: {
+                  not: 'CANCELLED',
+                },
+              },
+            ],
           },
         },
         courtImages: true,
