@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ListBooking } from './dto/booking.dto';
 import { AppotapayService } from 'src/appotapay/appotapay.service';
@@ -10,12 +10,15 @@ import {
   BookingData,
   BookingDataByUser,
 } from './interfaces/booking-interface';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class BookingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly appotapayService: AppotapayService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
   private calculatePlayTime(startTime: string, endTime: string): number {
     const start = moment(startTime, 'HH:mm');
@@ -172,9 +175,12 @@ export class BookingService {
     return moment.tz(dateTime, 'Asia/Ho_Chi_Minh');
   }
 
+  // #region Update booking status
   async updateBookingBill(data: any): Promise<string | any> {
     try {
       const billId = data.partnerReference.order.id.slice(4);
+
+      // Nếu giao dịch thành công (errorCode = 0)
       if (data.transaction.errorCode === 0) {
         const bill = await this.prisma.bill.update({
           where: {
@@ -184,6 +190,7 @@ export class BookingService {
             paymentStatus: BillStatus.Success,
           },
         });
+
         await this.prisma.booking.updateMany({
           where: {
             billId: bill.id,
@@ -214,6 +221,7 @@ export class BookingService {
             updatedAt: String(data.transaction.updatedAt),
           },
         });
+
         return 'success';
       }
 
@@ -221,6 +229,28 @@ export class BookingService {
         data.transaction.errorCode === 38 ||
         data.transaction.errorMessage === 77
       ) {
+        // const existingBooking = await this.prisma.booking.findMany({
+        //   where: {
+        //     billId: Number(billId),
+        //   },
+        // });
+
+        // for (const booking of existingBooking) {
+        //   const cacheKey = `court-${booking.courtId}-${booking.startDate}`;
+        //   const cacheData = await this.cacheManager.get(cacheKey);
+
+        //   if (cacheData) {
+        //     await this.cacheManager.del(cacheKey);
+
+        //     const channelName = `court-${booking.courtId}-${booking.startDate}`;
+        //     this.socketService.server.to(channelName).emit('courtData', {
+        //       courtId: booking.courtId,
+        //       startDate: booking.startDate,
+        //       status: 'Cancelled',
+        //     });
+        //   }
+        // }
+
         const notes = 'Payment Cancelled';
         const bill = await this.prisma.bill.update({
           where: {
@@ -240,8 +270,10 @@ export class BookingService {
             notes,
           },
         });
+
         return 'failed';
       }
+
       return 'error';
     } catch (error) {
       console.error(error);
@@ -250,6 +282,102 @@ export class BookingService {
       };
     }
   }
+
+  // async updateBookingBill(data: any): Promise<string | any> {
+  //   try {
+  //     const billId = data.partnerReference.order.id.slice(4);
+  //     if (data.transaction.errorCode === 0) {
+  //       const bill = await this.prisma.bill.update({
+  //         where: {
+  //           id: Number(billId),
+  //         },
+  //         data: {
+  //           paymentStatus: BillStatus.Success,
+  //         },
+  //       });
+  //       await this.prisma.booking.updateMany({
+  //         where: {
+  //           billId: bill.id,
+  //         },
+  //         data: {
+  //           statusBooking: BookingStatus.WaitingActive,
+  //         },
+  //       });
+
+  //       await this.prisma.billDetail.create({
+  //         data: {
+  //           billId: bill.id,
+  //           transactionId: String(data.transaction.transactionId),
+  //           reconciliationId: String(data.transaction.reconciliationId),
+  //           partnerCode: String(data.transaction.partnerCode),
+  //           status: String(data.transaction.status),
+  //           errorCode: Number(data.transaction.errorCode),
+  //           errorMessage: String(data.transaction.errorMessage),
+  //           orderAmount: Number(data.transaction.orderAmount),
+  //           amount: Number(data.transaction.amount),
+  //           discountAmount: Number(data.transaction.discountAmount),
+  //           currency: String(data.transaction.currency),
+  //           bankCode: String(data.transaction.bankCode),
+  //           paymentMethod: String(data.transaction.paymentMethod),
+  //           action: String(data.transaction.action),
+  //           clientIp: String(data.transaction.clientIp),
+  //           createdAt: String(data.transaction.createdAt),
+  //           updatedAt: String(data.transaction.updatedAt),
+  //         },
+  //       });
+  //       return 'success';
+  //     }
+
+  //     if (
+  //       data.transaction.errorCode === 38 ||
+  //       data.transaction.errorMessage === 77
+  //     ) {
+  //       const existingBooking = await this.prisma.booking.findMany({
+  //         where: {
+  //           billId: Number(billId)
+  //         }
+  //       });
+  //       console.log(existingBooking);
+  //       existingBooking.forEach(async (element) => {
+  //         const cacheKey = `court-${element.courtId}-${element.startDate}`;
+  //         const cacheData = await this.cacheManager.get(cacheKey);
+  //         console.log(cacheData);
+  //         if (!cacheData) {
+  //           await this.cacheManager.del(cacheKey)
+  //         }
+
+  //       });
+
+  //       const notes = 'Payment Cancelled';
+  //       const bill = await this.prisma.bill.update({
+  //         where: {
+  //           id: Number(billId),
+  //         },
+  //         data: {
+  //           paymentStatus: BillStatus.Cancelled,
+  //         },
+  //       });
+
+  //       await this.prisma.booking.updateMany({
+  //         where: {
+  //           billId: bill.id,
+  //         },
+  //         data: {
+  //           statusBooking: BookingStatus.Cancelled,
+  //           notes,
+  //         },
+  //       });
+  //       return 'failed';
+  //     }
+  //     return 'error';
+  //   } catch (error) {
+  //     console.error(error);
+  //     return {
+  //       message: error.message || 'An error occurred during the update process',
+  //     };
+  //   }
+  // }
+  // #endregion
 
   async createdBooking(data: ListBooking, userId: number) {
     const existingUser = await this.prisma.user.findUnique({
@@ -503,7 +631,7 @@ export class BookingService {
         userId,
       },
       orderBy: {
-        id: 'desc'
+        id: 'desc',
       },
       include: {
         booking: {

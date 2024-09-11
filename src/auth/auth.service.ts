@@ -129,6 +129,7 @@ export class AuthService {
         password: newPassword,
       },
     });
+    
     const payload = {
       id: newUser.id,
       email: newUser.email,

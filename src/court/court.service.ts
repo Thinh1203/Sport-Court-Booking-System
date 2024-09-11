@@ -302,7 +302,7 @@ export class CourtService {
         amenities: true,
         booking: {
           where: {
-            AND: [
+           AND: [
               {
                 startDate: {
                   equals: toDay,
@@ -472,9 +472,18 @@ export class CourtService {
         amenities: true,
         booking: {
           where: {
-            startDate: {
-              equals: toDay,
-            },
+            AND: [
+              {
+                startDate: {
+                  equals: toDay,
+                },
+              },
+              {
+                statusBooking: {
+                  not: 'CANCELLED',
+                },
+              },
+            ],
           },
         },
         courtImages: true,
@@ -515,15 +524,16 @@ export class CourtService {
       busyTimes.push(newData);
     }
 
-    const setUserCart = this.cacheManager.set(userCartKey, userCart, 1000 * 30);
+    const setUserCart = this.cacheManager.set(
+      userCartKey,
+      userCart
+    );
     const setBusyTime = this.cacheManager.set(
       busyTimesKey,
-      busyTimes,
-      1000 * 300,
+      busyTimes
     );
 
     await Promise.all([setUserCart, setBusyTime]);
-    const dataInCache = await this.cacheManager.get(busyTimesKey);
 
     const updatedTimeLineBooking = this.generateUpdatedTimeSlots(
       existingCourt,

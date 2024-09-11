@@ -9,11 +9,11 @@ export const updateUserApi = ApiBody({
                 type: 'string',
                 example: 'Nguyen Van A'
             },
-            role: { 
-                type: 'string',
-                example: 'USER'
-            },
-            numberPhone: {
+            // role: { 
+            //     type: 'string',
+            //     example: 'USER'
+            // },
+            phoneNumber: {
                 type: 'string',
                 description: 'Phone number max 10 characters',
                 example: '0334469291',

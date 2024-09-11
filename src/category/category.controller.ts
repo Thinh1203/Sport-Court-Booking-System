@@ -29,6 +29,7 @@ import {
 } from '@nestjs/swagger';
 import { createCategoryApiBody, updateCategoryApiBody } from './swagger';
 import { CouponDto } from 'src/coupon/dto/coupon.dto';
+import { CacheInterceptor, CacheKey } from '@nestjs/cache-manager';
 
 @ApiTags('category')
 @Controller('category')
@@ -54,12 +55,10 @@ export class CategoryController {
       if (!file) {
         throw new BadRequestException('File is required.');
       }
-      console.log(CouponDto);
-      
-      // const data = await this.categoryService.createCategory(categoryDto, file);
+      const data = await this.categoryService.createCategory(categoryDto, file);
       return res.status(HttpStatus.CREATED).json({
         statusCode: HttpStatus.CREATED,
-        // data,
+        data,
       });
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
@@ -72,39 +71,22 @@ export class CategoryController {
   @Get('')
   @ApiResponse({ status: 200, description: 'Get all category successfully' })
   @ApiResponse({ status: 400, description: 'Error' })
-  async getAllCategory(@Res() res: Response) {
-    try {
-      const data = await this.categoryService.getAllCategory();
-      return res.status(HttpStatus.OK).json({
-        statusCode: HttpStatus.OK,
-        data,
-      });
-    } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        code: HttpStatus.BAD_REQUEST,
-        message: error.message,
-      });
-    }
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('all-category_key')
+  async getAllCategory() {
+    const data = await this.categoryService.getAllCategory();
+    return data;
   }
 
   @Get(':id')
   @UseGuards(AuthGuard, AdminGuard)
+  @UseInterceptors(CacheInterceptor)
   @ApiResponse({ status: 200, description: 'Get category by id successfully' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiResponse({ status: 400, description: 'Error' })
-  async getCategoryById(@Res() res: Response, @Param('id') id: string) {
-    try {
-      const data = await this.categoryService.getCategoryById(Number(id));
-      return res.status(HttpStatus.OK).json({
-        statusCode: HttpStatus.OK,
-        data,
-      });
-    } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        code: HttpStatus.BAD_REQUEST,
-        message: error.message,
-      });
-    }
+  async getCategoryById(@Param('id') id: string) {
+    const data = await this.categoryService.getCategoryById(Number(id));
+    return data;
   }
 
   @Patch(':id')

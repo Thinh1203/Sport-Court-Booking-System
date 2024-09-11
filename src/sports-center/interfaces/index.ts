@@ -10,7 +10,6 @@ export interface SportCenterDataReturn {
 
 export interface SportCenterData {
   sports: Sport[];
-  regions: any[];
 }
 
 export interface Sport {
@@ -25,7 +24,6 @@ export interface Sport {
   timeRange: any;
   createdAt: string;
   updatedAt: string;
-  regionId: any;
   headquartersId?: number;
   headquarters?: Headquarters;
   theSportCenterCourt: TheSportCenterCourt[];
