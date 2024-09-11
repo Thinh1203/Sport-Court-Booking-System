@@ -67,18 +67,28 @@ export class AmenityController {
   }
 
   @Get('')
-  @UseInterceptors(CacheInterceptor)
-  @CacheKey('all-amenity_key')
+  // @UseInterceptors(CacheInterceptor)
+  // @CacheKey('all-amenity_key')
   async getAll() {
     const data = await this.amenityService.getAll();
     return data;
   }
 
   @Get(':id')
-  @UseInterceptors(CacheInterceptor)
-  async getOneById(@Param('id') id: string) {
-    const data = await this.amenityService.getOneById(Number(id));
-    return data;
+  // @UseInterceptors(CacheInterceptor)
+  async getOneById(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const data = await this.amenityService.getOneById(Number(id));
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data
+    });
+    } catch (error) {
+      return res.status(HttpStatus.BAD_GATEWAY).json({
+        statusCode: HttpStatus.BAD_GATEWAY,
+        message: error
+      })
+    }
   }
 
   @Patch(':id')

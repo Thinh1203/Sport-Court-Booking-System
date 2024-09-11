@@ -41,16 +41,21 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     CouponModule,
     ScheduleModule.forRoot(),
     InfobipModule,
-    CacheModule.registerAsync(RedisOptions),
+    // CacheModule.registerAsync(RedisOptions),
+    CacheModule.register({
+      isGlobal: true,
+      max: 100,
+      ttl: 30000
+    }),
     SocketModule,
     // LocationModule,
   ],
   controllers: [AppController],
   providers: [
-    {
-      provide:APP_INTERCEPTOR,
-      useClass: CacheInterceptor
-    },
+    // {
+    //   provide:APP_INTERCEPTOR,
+    //   useClass: CacheInterceptor
+    // },
     AppService],
 })
 export class AppModule {}
