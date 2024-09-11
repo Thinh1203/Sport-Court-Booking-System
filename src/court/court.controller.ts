@@ -31,6 +31,7 @@ import {
 import { addNewCart, createCourtApiBody, updateCourtApiBody } from './swagger';
 import { CourtFilter } from './dto/court-filter.dto';
 import { CartDto } from './dto/cart.dto';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 
 @ApiTags('court')
 @Controller('court')
@@ -72,29 +73,16 @@ export class CourtController {
   }
 
   @Get('')
-  @ApiResponse({ status: 200, description: 'Get all court successfully' })
-  @ApiResponse({ status: 400, description: 'Error' })
   @UseGuards(AuthGuard, AdminGuard)
+  @UseInterceptors(CacheInterceptor)
   @ApiBearerAuth()
-  async getAll(@Res() res: Response) {
-    try {
-      const data = await this.courtService.getAll();
-      return res.status(HttpStatus.OK).json({
-        statusCode: HttpStatus.OK,
-        data,
-      });
-    } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: error.message,
-      });
-    }
+  async getAll() {
+    const data = await this.courtService.getAll();
+    return data;
   }
 
   @Get(':id')
-  @ApiResponse({ status: 200, description: 'Get court by id successfully' })
-  @ApiResponse({ status: 404, description: 'Court not found' })
-  @ApiResponse({ status: 400, description: 'Error' })
+  @UseInterceptors(CacheInterceptor)
   @ApiQuery({
     name: 'date',
     required: false,
@@ -102,23 +90,9 @@ export class CourtController {
     description: 'Filter booking of court by date',
     example: '2024-08-29',
   })
-  async getOneById(
-    @Param('id') id: string,
-    @Query() query: CourtFilter,
-    @Res() res: Response,
-  ) {
-    try {
-      const data = await this.courtService.getById(Number(id), query);
-      return res.status(HttpStatus.OK).json({
-        statusCode: HttpStatus.OK,
-        data,
-      });
-    } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: error.message,
-      });
-    }
+  async getOneById(@Param('id') id: string, @Query() query: CourtFilter) {
+    const data = await this.courtService.getById(Number(id), query);
+    return data;
   }
 
   @Patch(':id')

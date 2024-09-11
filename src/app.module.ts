@@ -21,7 +21,7 @@ import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { SocketModule } from './socket/socket.module';
 import { RedisOptions } from './redis/redis.config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-// import { LocationModule } from './location/location.module';
+import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
@@ -43,7 +43,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     InfobipModule,
     CacheModule.registerAsync(RedisOptions),
     SocketModule,
-    // LocationModule,
+    LocationModule,
   ],
   controllers: [AppController],
   providers: [

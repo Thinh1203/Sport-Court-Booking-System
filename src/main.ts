@@ -26,6 +26,7 @@ async function bootstrap() {
       .addTag('court')
       .addTag('headquarter')
       .addTag('coupon')
+      .addTag('location')
       .addTag('sport-center').
       addTag('region')
       .addBearerAuth()
