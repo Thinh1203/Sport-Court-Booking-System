@@ -121,10 +121,10 @@ export class UserController {
         @Res() res: Response
     ) {
     try {
-        await this.userService.updateUserById(Number(id),UpdateUserDto);
+        const data = await this.userService.updateUserById(Number(id),UpdateUserDto);
         return res.status(HttpStatus.OK).json({
             statusCode: HttpStatus.OK,
-            message: 'User updated successfully',
+            data
         })
     } catch (error) {
         return res.status(HttpStatus.BAD_REQUEST).json({
