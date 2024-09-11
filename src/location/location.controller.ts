@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
+  Post,
   Req,
   Res,
   UseGuards,
@@ -10,12 +12,18 @@ import { LocationDto } from './dto/location.dto';
 import { Response } from 'express';
 import { LocationService } from './location.service';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { addLocationApiBody } from './swagger';
 
+@ApiTags('location')
 @Controller('location')
 export class LocationController {
   constructor(private readonly locationService: LocationService) {}
 
+  @Post('')
+  @ApiBearerAuth()
   @UseGuards(AuthGuard)
+  @addLocationApiBody
   async addNewLocation(
     @Res() res: Response,
     @Req() req: Request,
@@ -38,6 +46,8 @@ export class LocationController {
       });
     }
   }
+
+  @Get('')
   @UseGuards(AuthGuard)
   async getLocationByUserId(@Res() res: Response, @Req() req: Request) {
     try {
