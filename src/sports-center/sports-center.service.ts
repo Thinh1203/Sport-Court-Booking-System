@@ -280,16 +280,16 @@ export class SportsCenterService {
     return {
       data: {
         sports: listSportsCenter,
-        regions: query.search
-          ? await this.prisma.region.findMany({
-              where: {
-                name: {
-                  contains: query.search,
-                  mode: 'insensitive',
-                },
-              },
-            })
-          : [],
+        // regions: query.search
+        //   ? await this.prisma.region.findMany({
+        //       where: {
+        //         name: {
+        //           contains: query.search,
+        //           mode: 'insensitive',
+        //         },
+        //       },
+        //     })
+        //   : [],
       },
       // data: {
       //   sports: listSportsCenter,

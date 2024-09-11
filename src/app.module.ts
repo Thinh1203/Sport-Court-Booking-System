@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { SportsCenterModule } from './sports-center/sports-center.module';
 import { CategoryModule } from './category/category.module';
@@ -17,9 +17,11 @@ import { RegionModule } from './region/region.module';
 import { CouponModule } from './coupon/coupon.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { InfobipModule } from './infobip/infobip.module';
-import { CacheModule } from '@nestjs/cache-manager';
+import { CacheInterceptor, CacheModule } from '@nestjs/cache-manager';
 import { SocketModule } from './socket/socket.module';
-
+import { RedisOptions } from './redis/redis.config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+// import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
@@ -39,14 +41,16 @@ import { SocketModule } from './socket/socket.module';
     CouponModule,
     ScheduleModule.forRoot(),
     InfobipModule,
-    CacheModule.register({
-      isGlobal: true,
-      max: 100
-    }),
+    CacheModule.registerAsync(RedisOptions),
     SocketModule,
-    
+    // LocationModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      provide:APP_INTERCEPTOR,
+      useClass: CacheInterceptor
+    },
+    AppService],
 })
 export class AppModule {}

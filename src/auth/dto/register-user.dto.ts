@@ -9,7 +9,8 @@ export class RegisterUserDto {
     @IsNotEmpty()
     password: string;
  
-    phoneNumber?: string;
+    @IsNotEmpty()
+    phoneNumber: string;
 
     @IsNotEmpty()
     @MinLength(5)

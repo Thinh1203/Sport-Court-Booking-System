@@ -28,6 +28,7 @@ import {
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AdminGuard } from 'src/auth/auth.admin.guard';
 import { createAmenityApiBody, updateAmenityApiBody } from './swagger';
+import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
 
 @ApiTags('amenity')
 @Controller('amenity')
@@ -66,40 +67,18 @@ export class AmenityController {
   }
 
   @Get('')
-  @ApiResponse({ status: 200, description: 'Get all item successfully' })
-  @ApiResponse({ status: 400, description: 'Error' })
-  async getAll(@Res() res: Response) {
-    try {
-      const data = await this.amenityService.getAll();
-      return res.status(HttpStatus.OK).json({
-        statusCode: HttpStatus.OK,
-        data,
-      });
-    } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: error.message,
-      });
-    }
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('all-amenity_key')
+  async getAll() {
+    const data = await this.amenityService.getAll();
+    return data;
   }
 
   @Get(':id')
-  @ApiResponse({ status: 200, description: 'Get item by id successfully' })
-  @ApiResponse({ status: 404, description: 'Item not found' })
-  @ApiResponse({ status: 400, description: 'Error' })
-  async getOneById(@Param('id') id: string, @Res() res: Response) {
-    try {
-      const data = await this.amenityService.getOneById(Number(id));
-      return res.status(HttpStatus.OK).json({
-        statusCode: HttpStatus.OK,
-        data,
-      });
-    } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
-        statusCode: HttpStatus.BAD_REQUEST,
-        message: error.message,
-      });
-    }
+  @UseInterceptors(CacheInterceptor)
+  async getOneById(@Param('id') id: string) {
+    const data = await this.amenityService.getOneById(Number(id));
+    return data;
   }
 
   @Patch(':id')

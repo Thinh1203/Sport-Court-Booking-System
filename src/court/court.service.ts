@@ -515,15 +515,16 @@ export class CourtService {
       busyTimes.push(newData);
     }
 
-    const setUserCart = this.cacheManager.set(userCartKey, userCart, 1000 * 30);
+    const setUserCart = this.cacheManager.set(
+      userCartKey,
+      userCart
+    );
     const setBusyTime = this.cacheManager.set(
       busyTimesKey,
-      busyTimes,
-      1000 * 300,
+      busyTimes
     );
 
     await Promise.all([setUserCart, setBusyTime]);
-    const dataInCache = await this.cacheManager.get(busyTimesKey);
 
     const updatedTimeLineBooking = this.generateUpdatedTimeSlots(
       existingCourt,
