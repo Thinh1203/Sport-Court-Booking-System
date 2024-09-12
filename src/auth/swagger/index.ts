@@ -17,7 +17,7 @@ export const registerUserApi = ApiBody({
                 type: 'string',
                 example: '123456'
             },
-            numberPhone: {
+            phoneNumber: {
                 type: 'string',
                 description: 'Phone number max 10 characters',
                 example: '0334469291',

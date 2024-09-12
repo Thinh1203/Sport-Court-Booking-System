@@ -22,7 +22,7 @@ export class LocationService {
     if (existingLocation) {
       throw new HttpException('Location already exists', HttpStatus.CONFLICT);
     }
-    return await this.prisma.userLocation.create({
+    const data = await this.prisma.userLocation.create({
       data: {
         latitude: locationDto.lat,
         longtitude: locationDto.lon,
@@ -32,6 +32,14 @@ export class LocationService {
         userId: userId,
       },
     });
+    return {
+      id: data.id,
+      place_id: data.placeId,
+      lat: data.latitude,
+      lon: data.longtitude,
+      name: data.name,
+      display_name: data.displayName,
+    };
   }
 
   async getLocationByUserId(userId: number) {
@@ -43,10 +51,18 @@ export class LocationService {
     if (!existingUser) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
-    return await this.prisma.userLocation.findMany({
+    const data = await this.prisma.userLocation.findMany({
       where: {
         userId,
       },
     });
+    return data.map((e) => ({
+      id: e.id,
+      place_id: e.placeId,
+      lat: e.latitude,
+      lon: e.longtitude,
+      name: e.name,
+      display_name: e.displayName,
+    }));
   }
 }
