@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
+  Param,
   Post,
   Req,
   Res,
@@ -58,6 +60,28 @@ export class LocationController {
       return res.status(HttpStatus.OK).json({
         statusCode: HttpStatus.OK,
         data,
+      });
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: error.message,
+      });
+    }
+  }
+
+  
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  async deleteLocationByUse(@Res() res: Response, @Req() req: Request, @Param('id') id: string) {
+    try {
+      const user = req['user'];
+      await this.locationService.deleteLocationByUserId(
+        Number(user.id),
+        Number(id)
+      );
+      return res.status(HttpStatus.OK).json({
+        statusCode: HttpStatus.OK,
+        message: "Location deleted successfully!"
       });
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({

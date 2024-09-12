@@ -16,7 +16,17 @@ export class LocationService {
     }
     const existingLocation = await this.prisma.userLocation.findFirst({
       where: {
-        placeId: locationDto.place_id,
+        AND: [
+          {
+            latitude: locationDto.lat,
+          },
+          {
+            longtitude: locationDto.lon,
+          },
+          {
+            userId: existingUser.id,
+          },
+        ],
       },
     });
     if (existingLocation) {
@@ -56,8 +66,8 @@ export class LocationService {
         userId,
       },
       orderBy: {
-        id: 'desc'
-      }
+        id: 'desc',
+      },
     });
     return data.map((e) => ({
       id: e.id,
@@ -67,5 +77,28 @@ export class LocationService {
       name: e.name,
       display_name: e.displayName,
     }));
+  }
+
+  async deleteLocationByUserId(userId: number, locationId: number) {
+    const exsitingLocation = await this.prisma.userLocation.findFirst({
+      where: {
+        AND: [
+          {
+            userId: userId,
+          },
+          {
+            id: locationId,
+          },
+        ],
+      },
+    });
+    if (!exsitingLocation) {
+      throw new HttpException('Location not found', HttpStatus.NOT_FOUND);
+    }
+    return await this.prisma.userLocation.delete({
+      where: {
+        id: exsitingLocation.id,
+      },
+    });
   }
 }
