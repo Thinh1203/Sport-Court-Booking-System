@@ -55,6 +55,9 @@ export class LocationService {
       where: {
         userId,
       },
+      orderBy: {
+        id: 'desc'
+      }
     });
     return data.map((e) => ({
       id: e.id,
